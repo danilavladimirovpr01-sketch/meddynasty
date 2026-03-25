@@ -16,19 +16,23 @@ import './styles/videos.css';
 import './styles/course.css';
 import './styles/feedback.css';
 
-// Telegram Web App
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+try {
+  // Telegram Web App
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
 
-// Routes
-route('/', Home);
-route('/services', Services);
-route('/services/:id', ServiceDetail);
-route('/doctors', Doctors);
-route('/doctors/:id', DoctorDetail);
-route('/videos', Videos);
-route('/course', Course);
-route('/feedback', Feedback);
+  // Routes
+  route('/', Home);
+  route('/services', Services);
+  route('/services/:id', ServiceDetail);
+  route('/doctors', Doctors);
+  route('/doctors/:id', DoctorDetail);
+  route('/videos', Videos);
+  route('/course', Course);
+  route('/feedback', Feedback);
 
-// Start
-start(document.getElementById('root'));
+  // Start
+  start(document.getElementById('root'));
+} catch(e) {
+  document.getElementById('root').innerHTML = '<pre style="color:red;padding:20px;font-size:11px;word-break:break-all">' + e.message + '\n\n' + e.stack + '</pre>';
+}
