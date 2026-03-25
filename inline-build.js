@@ -35,6 +35,7 @@ const html = [
   '</head>',
   '<body>',
   '<div id="root"></div>',
+  '<script>window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}<' + '/script>',
   '<script>' + js + '<' + '/script>',
   '</body>',
   '</html>'
