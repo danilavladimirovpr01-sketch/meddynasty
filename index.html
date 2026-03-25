@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Династия</title>
+  <meta name="theme-color" content="#7F9540">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Reset & Base ===== */
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{-webkit-tap-highlight-color:transparent}
+    body{
+      font-family:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif;
+      color:#3D2B1F;background:#F7F6F2;
+      -webkit-font-smoothing:antialiased;
+      overscroll-behavior-y:contain;
+    }
+    a{color:inherit;text-decoration:none}
+    img{display:block;max-width:100%}
+    input,button,textarea{font:inherit;color:inherit;border:none;outline:none;background:none;cursor:pointer}
+    .app{min-height:100dvh;max-width:430px;margin:0 auto}
+
+    /* ===== Tokens ===== */
+    :root{
+      --green:#7F9540;--green-d:#6B7E36;--green-l:#A4B862;
+      --green-10:rgba(127,149,64,.1);--green-20:rgba(127,149,64,.2);
+      --brown:#3D2B1F;--brown-l:#563518;
+      --text:#3D2B1F;--text-2:#8C8578;--text-3:#B5AFA5;
+      --bg:#F7F6F2;--surface:#fff;--line:#E8E4DD;--line-l:#F0EDEA;
+      --err:#C4513D;--warn:#D4951A;--ok:#5A8F3C;
+      --r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:22px;
+      --ease:cubic-bezier(.16,1,.3,1);
+      --sab:env(safe-area-inset-bottom,0px);
+      --sat:env(safe-area-inset-top,0px);
+    }
+
+    /* ===== Page visibility ===== */
+    .page{display:none}
+    .page.active{display:block}
+
+    /* ===== Page Header ===== */
+    .page-head{
+      padding:calc(var(--sat) + 14px) 20px 14px;
+      display:flex;align-items:center;gap:14px;
+      position:sticky;top:0;z-index:50;
+      background:var(--bg);
+    }
+    .page-head__back{
+      width:38px;height:38px;border-radius:12px;
+      background:var(--surface);
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;color:var(--text);cursor:pointer;
+    }
+    .page-head__back:active{opacity:.7}
+    .page-head__title{font-size:1.125rem;font-weight:700;letter-spacing:-.01em}
+
+    /* ===== Search ===== */
+    .search{
+      margin:0 20px 16px;display:flex;align-items:center;gap:10px;
+      height:46px;padding:0 16px;
+      background:var(--surface);border-radius:var(--r-md);
+    }
+    .search svg{color:var(--text-3);flex-shrink:0}
+    .search input{flex:1;font-size:.875rem}
+    .search input::placeholder{color:var(--text-3)}
+
+    /* ===== Chips ===== */
+    .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:20px}
+    .chips::-webkit-scrollbar{display:none}
+    .chip{
+      flex-shrink:0;padding:9px 16px;border-radius:var(--r-sm);
+      font-size:.8125rem;font-weight:600;white-space:nowrap;
+      background:#EDEAE3;color:var(--text-2);
+      transition:all 150ms var(--ease);cursor:pointer;
+    }
+    .chip:active{transform:scale(.96)}
+    .chip.is-on{background:var(--green);color:#fff}
+
+    /* ===== Section ===== */
+    .sec{margin-bottom:24px}
+    .sec__head{display:flex;align-items:baseline;justify-content:space-between;padding:0 20px;margin-bottom:14px}
+    .sec__title{font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+    .sec__more{font-size:.8125rem;font-weight:600;color:var(--green);cursor:pointer}
+
+    /* ===== Button ===== */
+    .btn{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      height:50px;border-radius:var(--r-md);
+      font-size:.9375rem;font-weight:700;
+      transition:opacity 150ms;cursor:pointer;
+    }
+    .btn:active{opacity:.85}
+    .btn--green{background:var(--green);color:#fff}
+    .btn--full{width:100%}
+
+    /* ===== Tag ===== */
+    .tag{
+      display:inline-block;
+      font-size:.5625rem;font-weight:600;
+      padding:4px 8px;border-radius:6px;
+      background:var(--green-10);color:var(--green-d);
+    }
+
+    /* ===== Tab Bar ===== */
+    .tabs{
+      position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;
+      background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-top:1px solid rgba(232,228,223,.6);
+      padding:6px 0 calc(6px + var(--sab));
+      max-width:430px;margin:0 auto;z-index:100;
+    }
+    .tab{
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      padding:4px 8px;min-width:48px;min-height:44px;justify-content:center;
+      color:var(--text-3);transition:color 200ms var(--ease);position:relative;cursor:pointer;
+    }
+    .tab.is-on{color:var(--green)}
+    .tab.is-on::before{content:'';position:absolute;top:0;left:50%;translate:-50% 0;width:20px;height:2.5px;border-radius:2px;background:var(--green)}
+    .tab svg{width:22px;height:22px}
+    .tab span{font-size:.625rem;font-weight:600}
+    .bot{height:calc(72px + var(--sab))}
+
+    /* ===== Animations ===== */
+    [data-a]{opacity:0}
+    .app.ready [data-a]{animation:up 500ms var(--ease) both;animation-delay:var(--d,0ms)}
+    @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @media(prefers-reduced-motion:reduce){[data-a]{opacity:1!important;animation:none!important}}
+
+    /* ===== HOME: Hero ===== */
+    .hero{
+      padding:calc(env(safe-area-inset-top,0px) + 16px) 20px 28px;
+      background:linear-gradient(160deg,#6B8530 0%,#7F9540 50%,#8FA848 100%);
+      color:#fff;position:relative;overflow:hidden;
+      border-radius:0 0 28px 28px;
+    }
+    .hero::before{
+      content:'';position:absolute;
+      right:-50px;top:-50px;
+      width:200px;height:200px;border-radius:50%;
+      background:rgba(255,255,255,.07);
+    }
+    .hero::after{
+      content:'';position:absolute;
+      left:-30px;bottom:-60px;
+      width:150px;height:150px;border-radius:50%;
+      background:rgba(255,255,255,.05);
+    }
+    .hero__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;position:relative}
+    .hero__logo{height:44px;width:auto;filter:brightness(0) invert(1)}
+    .hero__btn{
+      width:38px;height:38px;border-radius:50%;
+      background:rgba(255,255,255,.15);
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;position:relative;cursor:pointer;
+    }
+    .hero__dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#fff;border:2px solid #7F9540}
+    .hero__greeting{font-size:.8125rem;opacity:.75;font-weight:500;margin-bottom:4px;position:relative}
+    .hero__title{font-size:1.75rem;font-weight:800;line-height:1.15;letter-spacing:-.025em;margin-bottom:18px;position:relative}
+    .hero__search{
+      display:flex;align-items:center;gap:10px;
+      background:rgba(255,255,255,.15);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:12px;padding:0 14px;height:46px;position:relative;
+    }
+    .hero__search svg{color:rgba(255,255,255,.55);flex-shrink:0}
+    .hero__search input{flex:1;font-size:.875rem;color:#fff}
+    .hero__search input::placeholder{color:rgba(255,255,255,.5)}
+
+    /* ===== HOME: Widgets ===== */
+    .widgets{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+      padding:20px 20px 0;margin-bottom:20px;
+    }
+    .widget{
+      aspect-ratio:1;
+      background:#fff;border-radius:18px;
+      box-shadow:0 2px 10px rgba(61,43,31,.06);
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      gap:10px;padding:12px 8px;
+      transition:transform 120ms cubic-bezier(.16,1,.3,1);
+      text-align:center;cursor:pointer;
+    }
+    .widget:active{transform:scale(.95)}
+    .widget__icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+    .widget__icon svg{width:48px;height:48px}
+    .widget__label{font-size:.6875rem;font-weight:700;line-height:1.25;color:#3D2B1F}
+
+    @keyframes pulse-cross{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+    @keyframes ring{0%,100%{transform:rotate(0)}15%{transform:rotate(12deg)}30%{transform:rotate(-10deg)}45%{transform:rotate(6deg)}60%{transform:rotate(0)}}
+    .widget:nth-child(1) .widget__icon svg{animation:pulse-cross 2s ease-in-out infinite}
+    .widget:nth-child(2) .widget__icon svg{animation:float 2.5s ease-in-out infinite}
+    .widget:nth-child(3) .widget__icon svg{animation:ring 3s ease-in-out infinite}
+
+    /* ===== HOME: Home Chips ===== */
+    .home-chips{
+      display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+      padding:20px 20px 0;margin-bottom:24px;
+    }
+    .home-chips::-webkit-scrollbar{display:none}
+    .home-chip{
+      flex-shrink:0;display:flex;align-items:center;gap:6px;
+      padding:10px 16px;border-radius:100px;
+      font-size:.8125rem;font-weight:600;white-space:nowrap;
+      background:#fff;box-shadow:0 1px 4px rgba(61,43,31,.05);
+      transition:all 150ms cubic-bezier(.16,1,.3,1);cursor:pointer;
+    }
+    .home-chip:active{transform:scale(.96)}
+    .home-chip.is-on{background:#7F9540;color:#fff;box-shadow:0 2px 10px rgba(127,149,64,.25)}
+    .home-chip svg{width:16px;height:16px}
+
+    /* ===== HOME: Featured doctor ===== */
+    .doc-feat{
+      margin:0 20px 14px;background:#fff;border-radius:18px;
+      box-shadow:0 2px 14px rgba(61,43,31,.06);padding:18px;
+      display:flex;gap:16px;align-items:center;
+      transition:transform 120ms cubic-bezier(.16,1,.3,1);
+      border:1.5px solid rgba(127,149,64,.15);cursor:pointer;
+    }
+    .doc-feat:active{transform:scale(.98)}
+    .doc-feat__ava{
+      width:68px;height:68px;border-radius:16px;
+      background:linear-gradient(135deg,#A4B862,#7F9540);
+      color:#fff;display:flex;align-items:center;justify-content:center;
+      font-size:1.25rem;font-weight:800;flex-shrink:0;
+    }
+    .doc-feat__info{flex:1;min-width:0}
+    .doc-feat__name{font-size:1rem;font-weight:700;margin-bottom:2px}
+    .doc-feat__spec{font-size:.6875rem;color:#8C7B6B;margin-bottom:8px}
+    .doc-feat__tags{display:flex;flex-wrap:wrap;gap:4px}
+    .doc-feat__tag{font-size:.5625rem;font-weight:600;padding:4px 8px;border-radius:6px;background:rgba(127,149,64,.1);color:#6B7E36}
+
+    /* Small doctor row */
+    .doc-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:0 20px}
+    .doc-row::-webkit-scrollbar{display:none}
+    .doc-sm{
+      flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;width:72px;
+      transition:transform 120ms cubic-bezier(.16,1,.3,1);cursor:pointer;
+    }
+    .doc-sm:active{transform:scale(.95)}
+    .doc-sm__ava{
+      width:56px;height:56px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.8125rem;font-weight:700;
+      background:hsl(var(--h,80) var(--s,30%) 86%);
+      color:hsl(var(--h,80) var(--s,30%) 30%);
+      border:2px solid rgba(127,149,64,.2);
+    }
+    .doc-sm__name{font-size:.5625rem;font-weight:600;text-align:center;line-height:1.2}
+
+    /* ===== HOME: Services numbered ===== */
+    .svcs{padding:0 20px;display:flex;flex-direction:column;gap:10px}
+    .svc-home{
+      display:flex;align-items:center;gap:14px;padding:16px;
+      background:#fff;border-radius:14px;
+      box-shadow:0 1px 6px rgba(61,43,31,.04);
+      transition:transform 120ms cubic-bezier(.16,1,.3,1);cursor:pointer;
+    }
+    .svc-home:active{transform:scale(.98)}
+    .svc-home__num{
+      width:38px;height:38px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1rem;font-weight:800;flex-shrink:0;
+      background:rgba(127,149,64,.1);color:#6B7E36;
+    }
+    .svc-home__info{flex:1;min-width:0}
+    .svc-home__name{font-size:.9375rem;font-weight:600;margin-bottom:2px}
+    .svc-home__desc{font-size:.6875rem;color:#8C7B6B}
+    .svc-home__price{font-size:.8125rem;font-weight:700;color:#7F9540;white-space:nowrap;flex-shrink:0}
+
+    /* ===== HOME: CTA ===== */
+    .cta{
+      margin:0 20px 28px;padding:20px;
+      background:linear-gradient(135deg,#7F9540,#92A84E);
+      border-radius:18px;color:#fff;position:relative;overflow:hidden;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;
+    }
+    .cta::before{content:'';position:absolute;right:-20px;bottom:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.1)}
+    .cta__text{position:relative}
+    .cta__title{font-size:1rem;font-weight:700;margin-bottom:4px}
+    .cta__sub{font-size:.6875rem;opacity:.85;line-height:1.4}
+    .cta__btn{
+      flex-shrink:0;width:44px;height:44px;border-radius:50%;
+      background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;
+      color:#fff;transition:background 150ms;position:relative;
+    }
+    .cta__btn:active{background:rgba(255,255,255,.3)}
+
+    /* ===== HOME: Team photo ===== */
+    .team{
+      margin:0 20px 28px;border-radius:18px;overflow:hidden;
+      position:relative;
+      box-shadow:0 2px 14px rgba(61,43,31,.07);
+    }
+    .team img{width:100%;display:block}
+    .team__overlay{
+      position:absolute;inset:0;
+      background:linear-gradient(0deg,rgba(87,115,35,.9) 0%,transparent 60%);
+      display:flex;flex-direction:column;justify-content:flex-end;
+      padding:18px;color:#fff;
+    }
+    .team__title{font-size:1rem;font-weight:700;margin-bottom:4px}
+    .team__sub{font-size:.75rem;opacity:.85;line-height:1.4}
+
+    /* ===== HOME: Tip ===== */
+    .tip{
+      margin:0 20px 28px;padding:16px 18px;
+      background:#EDE8DA;border-radius:14px;
+    }
+    .tip__row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .tip__badge{font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:100px;background:#7F9540;color:#fff}
+    .tip__time{font-size:.625rem;color:#8C7B6B;font-weight:500}
+    .tip__text{font-size:.8125rem;line-height:1.5;color:#3D2B1F}
+
+    /* ===== SERVICES LIST ===== */
+    .svc{
+      display:flex;align-items:center;gap:14px;
+      padding:16px;margin:0 20px 10px;
+      background:var(--surface);border-radius:var(--r-lg);
+      transition:transform 120ms var(--ease);cursor:pointer;
+    }
+    .svc:active{transform:scale(.98)}
+    .svc__ic{
+      width:44px;height:44px;border-radius:12px;
+      background:var(--green-10);color:var(--green);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .svc__info{flex:1;min-width:0}
+    .svc__name{font-size:.9375rem;font-weight:600;margin-bottom:2px}
+    .svc__desc{font-size:.6875rem;color:var(--text-2);line-height:1.3}
+    .svc__right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+    .svc__price{font-size:.8125rem;font-weight:700;color:var(--green)}
+    .svc__chevron{color:var(--text-3)}
+    .results{font-size:.75rem;color:var(--text-2);padding:0 20px;margin-bottom:12px}
+
+    /* ===== SERVICE DETAIL ===== */
+    .svc-hero{margin:0 20px 20px;padding:22px 20px;background:var(--green);border-radius:var(--r-xl);color:#fff;position:relative;overflow:hidden}
+    .svc-hero::after{content:'';position:absolute;right:-20px;bottom:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.07)}
+    .svc-hero__cat{font-size:.6875rem;font-weight:600;opacity:.7;margin-bottom:4px;position:relative}
+    .svc-hero__title{font-size:1.5rem;font-weight:800;line-height:1.2;margin-bottom:8px;position:relative}
+    .svc-hero__price{font-size:1rem;font-weight:700;position:relative}
+    .svc-hero__price span{opacity:.7;font-weight:500;font-size:.8125rem}
+
+    /* Info blocks */
+    .block{margin:0 20px 16px;background:var(--surface);border-radius:var(--r-lg);padding:18px}
+    .block__title{font-size:.9375rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .block__title svg{color:var(--green);flex-shrink:0}
+
+    /* Steps */
+    .steps{display:flex;flex-direction:column;gap:0}
+    .step{display:flex;gap:14px;position:relative;padding-bottom:16px}
+    .step:last-child{padding-bottom:0}
+    .step__line{position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--line)}
+    .step:last-child .step__line{display:none}
+    .step__dot{width:32px;height:32px;border-radius:50%;background:var(--green-10);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;position:relative}
+    .step__text{flex:1;padding-top:5px}
+    .step__name{font-size:.8125rem;font-weight:600;margin-bottom:2px}
+    .step__desc{font-size:.6875rem;color:var(--text-2);line-height:1.4}
+
+    /* Checklist */
+    .check{display:flex;align-items:flex-start;gap:10px;padding:10px 0}
+    .check+.check{border-top:1px solid var(--line-l)}
+    .check__box{
+      width:22px;height:22px;border-radius:6px;
+      border:2px solid var(--line);flex-shrink:0;margin-top:1px;
+      display:flex;align-items:center;justify-content:center;
+      transition:all 200ms;cursor:pointer;
+    }
+    .check__box.done{background:var(--green);border-color:var(--green)}
+    .check__box.done svg{opacity:1}
+    .check__box svg{opacity:0;transition:opacity 200ms}
+    .check__label{font-size:.8125rem;line-height:1.4;flex:1}
+
+    /* Calculator */
+    .calc{display:flex;justify-content:space-between;gap:12px}
+    .calc__item{flex:1;text-align:center;padding:14px;background:var(--bg);border-radius:var(--r-sm)}
+    .calc__label{font-size:.625rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+    .calc__val{font-size:1.125rem;font-weight:800;color:var(--green)}
+
+    /* FAQ */
+    .faq{border-top:1px solid var(--line-l)}
+    .faq__q{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 0;font-size:.8125rem;font-weight:600;
+      cursor:pointer;gap:10px;
+    }
+    .faq__q svg{flex-shrink:0;color:var(--text-3);transition:transform 200ms}
+    .faq__q.open svg{transform:rotate(180deg)}
+    .faq__a{font-size:.75rem;color:var(--text-2);line-height:1.5;padding-bottom:14px;display:none}
+    .faq__a.open{display:block}
+
+    /* Timeline */
+    .tl{display:flex;flex-direction:column;gap:0}
+    .tl__item{display:flex;gap:12px;padding:10px 0;align-items:center}
+    .tl__item+.tl__item{border-top:1px solid var(--line-l)}
+    .tl__day{width:52px;font-size:.6875rem;font-weight:700;color:var(--green);flex-shrink:0}
+    .tl__text{font-size:.8125rem;line-height:1.3;flex:1}
+
+    /* Memo */
+    .memo{display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg);border-radius:var(--r-sm);cursor:pointer}
+    .memo__ic{width:40px;height:40px;border-radius:10px;background:var(--green-10);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .memo__info{flex:1}
+    .memo__name{font-size:.8125rem;font-weight:600;margin-bottom:2px}
+    .memo__size{font-size:.6875rem;color:var(--text-2)}
+    .memo__dl{color:var(--green);flex-shrink:0}
+
+    /* CTA wrap */
+    .cta-wrap{position:sticky;bottom:calc(68px + var(--sab));padding:12px 20px;background:linear-gradient(0deg,var(--bg) 60%,transparent);z-index:40}
+
+    /* ===== DOCTORS LIST ===== */
+    .docs{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px}
+    .doc{background:var(--surface);border-radius:var(--r-lg);padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform 120ms var(--ease);cursor:pointer}
+    .doc:active{transform:scale(.97)}
+    .doc__ava{width:64px;height:64px;border-radius:50%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;background:linear-gradient(135deg,hsl(var(--h,80) var(--s,30%) 85%),hsl(var(--h,80) var(--s,30%) 76%));color:hsl(var(--h,80) var(--s,30%) 28%);border:2px solid var(--green-20)}
+    .doc__name{font-size:.8125rem;font-weight:700;margin-bottom:2px;line-height:1.2}
+    .doc__spec{font-size:.625rem;color:var(--text-2);margin-bottom:8px}
+    .doc__tags{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+
+    /* ===== DOCTOR DETAIL ===== */
+    .profile{text-align:center;padding:10px 20px 24px}
+    .profile__ava{width:88px;height:88px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#A4B862,#7F9540);color:#fff;border:3px solid var(--green-20)}
+    .profile__name{font-size:1.25rem;font-weight:800;margin-bottom:2px}
+    .profile__spec{font-size:.8125rem;color:var(--text-2);margin-bottom:10px}
+    .profile__tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+
+    .video{margin:0 20px 16px;border-radius:var(--r-lg);overflow:hidden;background:#1a1a1a;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative}
+    .video__play{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 150ms var(--ease)}
+    .video__play:active{transform:scale(.9)}
+    .video__label{position:absolute;bottom:12px;left:14px;font-size:.6875rem;font-weight:600;color:rgba(255,255,255,.7)}
+
+    .helps{display:flex;flex-direction:column;gap:0}
+    .help{display:flex;align-items:flex-start;gap:10px;padding:10px 0}
+    .help+.help{border-top:1px solid var(--line-l)}
+    .help__ic{width:28px;height:28px;border-radius:8px;background:var(--green-10);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .help__text{font-size:.8125rem;line-height:1.4}
+
+    .bio{font-size:.8125rem;line-height:1.6;color:var(--text-2)}
+
+    .dsvc{display:flex;align-items:center;justify-content:space-between;padding:12px 0;cursor:pointer}
+    .dsvc+.dsvc{border-top:1px solid var(--line-l)}
+    .dsvc__name{font-size:.8125rem;font-weight:600}
+    .dsvc__price{font-size:.8125rem;font-weight:700;color:var(--green)}
+
+    /* ===== VIDEOS ===== */
+    .vids{display:flex;flex-direction:column;gap:14px;padding:0 20px}
+    .vid{background:var(--surface);border-radius:var(--r-lg);overflow:hidden;transition:transform 120ms var(--ease)}
+    .vid:active{transform:scale(.98)}
+    .vid__thumb{aspect-ratio:16/9;background:#2C2C2C;position:relative;display:flex;align-items:center;justify-content:center}
+    .vid__play{width:48px;height:48px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center}
+    .vid__dur{position:absolute;bottom:10px;right:10px;font-size:.625rem;font-weight:600;color:#fff;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:6px}
+    .vid__cat{position:absolute;top:10px;left:10px;font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:var(--green);padding:3px 8px;border-radius:6px}
+    .vid__info{padding:14px 16px}
+    .vid__title{font-size:.9375rem;font-weight:700;margin-bottom:4px;line-height:1.3}
+    .vid__meta{font-size:.6875rem;color:var(--text-2)}
+
+    /* ===== COURSE ===== */
+    .progress-card{margin:0 20px 16px;padding:22px 20px;background:var(--green);border-radius:var(--r-xl);color:#fff;position:relative;overflow:hidden}
+    .progress-card::after{content:'';position:absolute;right:-20px;bottom:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07)}
+    .progress__label{font-size:.75rem;font-weight:600;opacity:.75;margin-bottom:4px;position:relative}
+    .progress__title{font-size:1.5rem;font-weight:800;margin-bottom:4px;position:relative}
+    .progress__sub{font-size:.75rem;opacity:.7;margin-bottom:16px;position:relative}
+    .progress__bar{height:8px;background:rgba(255,255,255,.2);border-radius:100px;overflow:hidden;position:relative}
+    .progress__fill{height:100%;background:#fff;border-radius:100px;transition:width 600ms var(--ease)}
+
+    .visit{display:flex;gap:14px;padding:12px 0;align-items:center}
+    .visit+.visit{border-top:1px solid var(--line-l)}
+    .visit__dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .visit__dot--done{background:var(--green)}
+    .visit__dot--next{background:var(--warn);animation:blink 2s ease-in-out infinite}
+    .visit__dot--pending{background:var(--line)}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+    .visit__info{flex:1}
+    .visit__name{font-size:.8125rem;font-weight:600}
+    .visit__date{font-size:.6875rem;color:var(--text-2)}
+    .visit__status{font-size:.625rem;font-weight:600;flex-shrink:0}
+    .visit__status--done{color:var(--green)}
+    .visit__status--next{color:var(--warn)}
+
+    .diary__today{text-align:center;margin-bottom:14px}
+    .diary__q{font-size:.875rem;font-weight:600;margin-bottom:12px}
+    .diary__moods{display:flex;justify-content:center;gap:10px}
+    .diary__mood{
+      width:48px;height:48px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.25rem;
+      background:var(--bg);border:2px solid transparent;
+      transition:all 200ms var(--ease);cursor:pointer;
+    }
+    .diary__mood:active,.diary__mood.sel{border-color:var(--green);background:var(--green-10);transform:scale(1.1)}
+    .diary__scale{display:flex;justify-content:space-between;margin-top:8px;padding:0 6px}
+    .diary__scale span{font-size:.5625rem;color:var(--text-3);font-weight:500}
+
+    .diary__history{margin-top:16px}
+    .diary__row{display:flex;align-items:center;gap:10px;padding:8px 0}
+    .diary__row+.diary__row{border-top:1px solid var(--line-l)}
+    .diary__day{font-size:.6875rem;font-weight:600;width:44px;flex-shrink:0;color:var(--text-2)}
+    .diary__dots{display:flex;gap:3px;flex:1}
+    .diary__d{width:8px;height:8px;border-radius:50%}
+    .diary__val{font-size:.6875rem;font-weight:700;width:20px;text-align:right;flex-shrink:0}
+
+    .reminder{display:flex;align-items:center;gap:14px;padding:14px;background:var(--green-10);border-radius:var(--r-sm);cursor:pointer}
+    .reminder__ic{width:40px;height:40px;border-radius:12px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .reminder__info{flex:1}
+    .reminder__title{font-size:.8125rem;font-weight:700;margin-bottom:2px}
+    .reminder__time{font-size:.6875rem;color:var(--text-2)}
+    .reminder__btn{font-size:.6875rem;font-weight:700;color:var(--green);flex-shrink:0}
+
+    /* ===== FEEDBACK ===== */
+    .fb{padding:0 20px}
+    .fb__hero{text-align:center;padding:20px 0 28px}
+    .fb__icon{width:64px;height:64px;border-radius:50%;background:var(--green-10);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+    .fb__title{font-size:1.375rem;font-weight:800;margin-bottom:4px}
+    .fb__sub{font-size:.8125rem;color:var(--text-2)}
+
+    .ratings{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+    .rate{
+      display:flex;align-items:center;gap:14px;
+      padding:18px;background:var(--surface);border-radius:var(--r-lg);
+      cursor:pointer;transition:all 200ms var(--ease);
+      border:2px solid transparent;
+    }
+    .rate:active{transform:scale(.98)}
+    .rate.sel{border-color:var(--green);background:var(--green-10)}
+    .rate__emoji{font-size:1.5rem;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+    .rate__text{flex:1}
+    .rate__label{font-size:.9375rem;font-weight:700;margin-bottom:1px}
+    .rate__desc{font-size:.6875rem;color:var(--text-2)}
+    .rate__check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 200ms}
+    .rate.sel .rate__check{background:var(--green);border-color:var(--green)}
+
+    .detail{display:none;margin-bottom:24px}
+    .detail.show{display:block}
+    .detail__label{font-size:.875rem;font-weight:700;margin-bottom:10px}
+    .detail__area{
+      width:100%;min-height:100px;padding:14px;
+      background:var(--surface);border:1.5px solid var(--line);
+      border-radius:var(--r-md);resize:vertical;
+      font-size:.875rem;line-height:1.5;
+      transition:border-color 200ms;
+    }
+    .detail__area:focus{border-color:var(--green)}
+    .detail__area::placeholder{color:var(--text-3)}
+    .detail__hint{font-size:.6875rem;color:var(--text-2);margin-top:8px}
+
+    .fb .cta-wrap{padding:0 0 24px}
+
+    .thanks{display:none;text-align:center;padding:40px 20px}
+    .thanks.show{display:block}
+    .thanks__ic{width:72px;height:72px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+    .thanks__title{font-size:1.25rem;font-weight:800;margin-bottom:6px}
+    .thanks__text{font-size:.8125rem;color:var(--text-2);line-height:1.5}
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- PAGE: HOME -->
+  <div class="page active" id="page-home"></div>
+
+  <!-- PAGE: SERVICES -->
+  <div class="page" id="page-services"></div>
+
+  <!-- PAGE: SERVICE DETAIL -->
+  <div class="page" id="page-service-detail"></div>
+
+  <!-- PAGE: DOCTORS -->
+  <div class="page" id="page-doctors"></div>
+
+  <!-- PAGE: DOCTOR DETAIL -->
+  <div class="page" id="page-doctor-detail"></div>
+
+  <!-- PAGE: VIDEOS -->
+  <div class="page" id="page-videos"></div>
+
+  <!-- PAGE: COURSE -->
+  <div class="page" id="page-course"></div>
+
+  <!-- PAGE: FEEDBACK -->
+  <div class="page" id="page-feedback"></div>
+
+  <!-- TAB BAR -->
+  <nav class="tabs" id="tabBar" aria-label="Навигация"></nav>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
+
+  /* ===== DATA ===== */
+  var doctors = [
+    {"id":"ivanov","initials":"\u0410\u0418","name":"\u0418\u0432\u0430\u043d\u043e\u0432 \u0410\u043b\u0435\u043a\u0441\u0435\u0439 \u041a\u0438\u0440\u0438\u043b\u043b\u043e\u0432\u0438\u0447","shortName":"\u0418\u0432\u0430\u043d\u043e\u0432 \u0410.\u041a.","spec":"\u0422\u0440\u0430\u0432\u043c\u0430\u0442\u043e\u043b\u043e\u0433-\u043e\u0440\u0442\u043e\u043f\u0435\u0434","experience":"14 \u043b\u0435\u0442","hue":85,"sat":"35%","tags":["\u0441\u043f\u043e\u0440\u0442\u0438\u0432\u043d\u044b\u0435 \u0442\u0440\u0430\u0432\u043c\u044b","\u0441\u0443\u0441\u0442\u0430\u0432\u044b","\u043f\u043e\u0437\u0432\u043e\u043d\u043e\u0447\u043d\u0438\u043a"],"helpsIf":["\u0411\u043e\u043b\u044c \u0432 \u0441\u0443\u0441\u0442\u0430\u0432\u0430\u0445 \u043f\u0440\u0438 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0438 \u0438\u043b\u0438 \u0432 \u043f\u043e\u043a\u043e\u0435","\u0422\u0440\u0430\u0432\u043c\u0430 \u043d\u0430 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0435 \u0438\u043b\u0438 \u0432 \u0431\u044b\u0442\u0443","\u041d\u0430\u0440\u0443\u0448\u0435\u043d\u0438\u0435 \u043e\u0441\u0430\u043d\u043a\u0438, \u0441\u043a\u043e\u043b\u0438\u043e\u0437","\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u044f \u043f\u043e\u0441\u043b\u0435 \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0438 \u043d\u0430 \u0441\u0443\u0441\u0442\u0430\u0432\u0430\u0445","\u041f\u043b\u043e\u0441\u043a\u043e\u0441\u0442\u043e\u043f\u0438\u0435 \u0438 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0441\u043e \u0441\u0442\u043e\u043f\u043e\u0439"],"bio":"\u0417\u0430\u043a\u043e\u043d\u0447\u0438\u043b \u041f\u0435\u0440\u0432\u044b\u0439 \u041c\u0413\u041c\u0423 \u0438\u043c. \u0421\u0435\u0447\u0435\u043d\u043e\u0432\u0430. \u0421\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u0443\u0435\u0442\u0441\u044f \u043d\u0430 \u0437\u0430\u0431\u043e\u043b\u0435\u0432\u0430\u043d\u0438\u044f\u0445 \u043e\u043f\u043e\u0440\u043d\u043e-\u0434\u0432\u0438\u0433\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0433\u043e \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0430, \u0441\u043f\u043e\u0440\u0442\u0438\u0432\u043d\u044b\u0445 \u0442\u0440\u0430\u0432\u043c\u0430\u0445. \u0420\u0435\u0433\u0443\u043b\u044f\u0440\u043d\u043e \u043f\u043e\u0432\u044b\u0448\u0430\u0435\u0442 \u043a\u0432\u0430\u043b\u0438\u0444\u0438\u043a\u0430\u0446\u0438\u044e \u043d\u0430 \u043a\u043e\u043d\u0444\u0435\u0440\u0435\u043d\u0446\u0438\u044f\u0445 \u0432 \u0420\u043e\u0441\u0441\u0438\u0438 \u0438 \u0437\u0430 \u0440\u0443\u0431\u0435\u0436\u043e\u043c. \u0410\u0432\u0442\u043e\u0440 12 \u043d\u0430\u0443\u0447\u043d\u044b\u0445 \u043f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u0439.","services":[{"name":"\u041f\u0435\u0440\u0432\u0438\u0447\u043d\u0430\u044f \u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f","price":"3 000"},{"name":"\u041f\u043e\u0432\u0442\u043e\u0440\u043d\u0430\u044f \u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f","price":"2 000"},{"name":"\u0423\u0417\u0418 \u0441\u0443\u0441\u0442\u0430\u0432\u043e\u0432","price":"2 000"}]},
+    {"id":"petrova","initials":"\u041c\u041f","name":"\u041f\u0435\u0442\u0440\u043e\u0432\u0430 \u041c\u0430\u0440\u0438\u044f \u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440\u043e\u0432\u043d\u0430","shortName":"\u041f\u0435\u0442\u0440\u043e\u0432\u0430 \u041c.\u0412.","spec":"\u041d\u0435\u0432\u0440\u043e\u043b\u043e\u0433","experience":"10 \u043b\u0435\u0442","hue":95,"sat":"28%","tags":["\u0433\u043e\u043b\u043e\u0432\u043d\u044b\u0435 \u0431\u043e\u043b\u0438"],"helpsIf":["\u0427\u0430\u0441\u0442\u044b\u0435 \u0433\u043e\u043b\u043e\u0432\u043d\u044b\u0435 \u0431\u043e\u043b\u0438 \u0438 \u043c\u0438\u0433\u0440\u0435\u043d\u0438","\u0413\u043e\u043b\u043e\u0432\u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0435 \u0438 \u0448\u0443\u043c \u0432 \u0443\u0448\u0430\u0445","\u0411\u043e\u043b\u0438 \u0432 \u0441\u043f\u0438\u043d\u0435 \u0438 \u0448\u0435\u0435"],"bio":"\u0421\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442 \u043f\u043e \u043d\u0435\u0432\u0440\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u043c \u0437\u0430\u0431\u043e\u043b\u0435\u0432\u0430\u043d\u0438\u044f\u043c.","services":[{"name":"\u041a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f \u043d\u0435\u0432\u0440\u043e\u043b\u043e\u0433\u0430","price":"3 000"}]},
+    {"id":"sidorov","initials":"\u0414\u0421","name":"\u0421\u0438\u0434\u043e\u0440\u043e\u0432 \u0414\u043c\u0438\u0442\u0440\u0438\u0439 \u0415\u0432\u0433\u0435\u043d\u044c\u0435\u0432\u0438\u0447","shortName":"\u0421\u0438\u0434\u043e\u0440\u043e\u0432 \u0414.\u0415.","spec":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u044b\u0439 \u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442","experience":"12 \u043b\u0435\u0442","hue":70,"sat":"38%","tags":["\u0441\u043f\u0438\u043d\u0430","\u043e\u0441\u0430\u043d\u043a\u0430"],"helpsIf":["\u0411\u043e\u043b\u0438 \u0432 \u043f\u043e\u044f\u0441\u043d\u0438\u0446\u0435 \u0438 \u0433\u0440\u0443\u0434\u043d\u043e\u043c \u043e\u0442\u0434\u0435\u043b\u0435","\u041d\u0430\u0440\u0443\u0448\u0435\u043d\u0438\u044f \u043e\u0441\u0430\u043d\u043a\u0438","\u041c\u044b\u0448\u0435\u0447\u043d\u044b\u0435 \u0441\u043f\u0430\u0437\u043c\u044b"],"bio":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u044b\u0439 \u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442 \u0441 12-\u043b\u0435\u0442\u043d\u0438\u043c \u0441\u0442\u0430\u0436\u0435\u043c.","services":[{"name":"\u0421\u0435\u0430\u043d\u0441 \u043c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u043e\u0439 \u0442\u0435\u0440\u0430\u043f\u0438\u0438","price":"4 500"}]},
+    {"id":"kozlova","initials":"\u0415\u041a","name":"\u041a\u043e\u0437\u043b\u043e\u0432\u0430 \u0415\u043b\u0435\u043d\u0430 \u0410\u043d\u0434\u0440\u0435\u0435\u0432\u043d\u0430","shortName":"\u041a\u043e\u0437\u043b\u043e\u0432\u0430 \u0415.\u0410.","spec":"\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u043e\u043b\u043e\u0433","experience":"8 \u043b\u0435\u0442","hue":90,"sat":"25%","tags":["\u043f\u043e\u0441\u043b\u0435 \u0442\u0440\u0430\u0432\u043c"],"helpsIf":["\u0412\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u043e\u0441\u043b\u0435 \u0442\u0440\u0430\u0432\u043c","\u0412\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u043e\u0441\u043b\u0435 \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439"],"bio":"\u0421\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442 \u043f\u043e \u0440\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u0438.","services":[{"name":"\u041a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f \u0440\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u043e\u043b\u043e\u0433\u0430","price":"3 000"}]},
+    {"id":"novikov","initials":"\u0412\u041d","name":"\u041d\u043e\u0432\u0438\u043a\u043e\u0432 \u0412\u0438\u043a\u0442\u043e\u0440 \u0421\u0435\u0440\u0433\u0435\u0435\u0432\u0438\u0447","shortName":"\u041d\u043e\u0432\u0438\u043a\u043e\u0432 \u0412.\u0421.","spec":"\u041e\u0440\u0442\u043e\u043f\u0435\u0434","experience":"9 \u043b\u0435\u0442","hue":75,"sat":"32%","tags":["\u0434\u0435\u0442\u0438","\u0441\u0442\u043e\u043f\u0430"],"helpsIf":["\u0414\u0435\u0442\u0441\u043a\u0430\u044f \u043e\u0440\u0442\u043e\u043f\u0435\u0434\u0438\u044f","\u041f\u043b\u043e\u0441\u043a\u043e\u0441\u0442\u043e\u043f\u0438\u0435"],"bio":"\u0414\u0435\u0442\u0441\u043a\u0438\u0439 \u043e\u0440\u0442\u043e\u043f\u0435\u0434.","services":[{"name":"\u041a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f \u043e\u0440\u0442\u043e\u043f\u0435\u0434\u0430","price":"3 000"}]},
+    {"id":"smirnova","initials":"\u0410\u0421","name":"\u0421\u043c\u0438\u0440\u043d\u043e\u0432\u0430 \u0410\u043d\u043d\u0430 \u0420\u043e\u043c\u0430\u043d\u043e\u0432\u043d\u0430","shortName":"\u0421\u043c\u0438\u0440\u043d\u043e\u0432\u0430 \u0410.\u0420.","spec":"\u0424\u0438\u0437\u0438\u043e\u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442","experience":"7 \u043b\u0435\u0442","hue":80,"sat":"30%","tags":["\u0430\u043f\u043f\u0430\u0440\u0430\u0442\u043d\u0430\u044f"],"helpsIf":["\u0424\u0438\u0437\u0438\u043e\u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u0435"],"bio":"\u0424\u0438\u0437\u0438\u043e\u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442.","services":[{"name":"\u0421\u0435\u0430\u043d\u0441 \u0444\u0438\u0437\u0438\u043e\u0442\u0435\u0440\u0430\u043f\u0438\u0438","price":"2 000"}]}
+  ];
+
+  var services = [
+    {"id":"ortho-consult","name":"\u041a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f \u043e\u0440\u0442\u043e\u043f\u0435\u0434\u0430","desc":"\u041e\u0441\u043c\u043e\u0442\u0440, \u0434\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430, \u043f\u043b\u0430\u043d \u043b\u0435\u0447\u0435\u043d\u0438\u044f","price":"3 000","priceMax":"8 000","priceTypical":"5 500","category":"\u041e\u0440\u0442\u043e\u043f\u0435\u0434\u0438\u044f","duration":"45 \u043c\u0438\u043d\u0443\u0442","icon":"clipboard","steps":[{"title":"\u0411\u0435\u0441\u0435\u0434\u0430","desc":"\u0412\u0440\u0430\u0447 \u0432\u044b\u0441\u043b\u0443\u0448\u0430\u0435\u0442 \u0436\u0430\u043b\u043e\u0431\u044b, \u0443\u0442\u043e\u0447\u043d\u0438\u0442 \u0430\u043d\u0430\u043c\u043d\u0435\u0437"},{"title":"\u041e\u0441\u043c\u043e\u0442\u0440","desc":"\u041e\u0446\u0435\u043d\u043a\u0430 \u043f\u043e\u0434\u0432\u0438\u0436\u043d\u043e\u0441\u0442\u0438, \u043f\u0430\u043b\u044c\u043f\u0430\u0446\u0438\u044f, \u0442\u0435\u0441\u0442\u044b"},{"title":"\u0414\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430","desc":"\u0423\u0417\u0418 \u0438\u043b\u0438 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u0430 \u041c\u0420\u0422 \u043f\u0440\u0438 \u043d\u0435\u043e\u0431\u0445\u043e\u0434\u0438\u043c\u043e\u0441\u0442\u0438"},{"title":"\u041f\u043b\u0430\u043d \u043b\u0435\u0447\u0435\u043d\u0438\u044f","desc":"\u0418\u043d\u0434\u0438\u0432\u0438\u0434\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0430, \u0441\u0440\u043e\u043a\u0438, \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c"}],"checklist":["\u041f\u0430\u0441\u043f\u043e\u0440\u0442","\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b \u043f\u0440\u0435\u0434\u044b\u0434\u0443\u0449\u0438\u0445 \u043e\u0431\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u0439 (\u041c\u0420\u0422, \u0440\u0435\u043d\u0442\u0433\u0435\u043d, \u0423\u0417\u0418)","\u0423\u0434\u043e\u0431\u043d\u0430\u044f \u043e\u0434\u0435\u0436\u0434\u0430 \u0434\u043b\u044f \u043e\u0441\u043c\u043e\u0442\u0440\u0430","\u0421\u043f\u0438\u0441\u043e\u043a \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0435\u043c\u044b\u0445 \u043b\u0435\u043a\u0430\u0440\u0441\u0442\u0432"],"faq":[{"q":"\u041d\u0443\u0436\u043d\u043e \u043b\u0438 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043e\u0442 \u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442\u0430?","a":"\u041d\u0435\u0442, \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043d\u0435 \u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f. \u0412\u044b \u043c\u043e\u0436\u0435\u0442\u0435 \u0437\u0430\u043f\u0438\u0441\u0430\u0442\u044c\u0441\u044f \u043d\u0430\u043f\u0440\u044f\u043c\u0443\u044e \u043a \u043e\u0440\u0442\u043e\u043f\u0435\u0434\u0443."},{"q":"\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0434\u043b\u0438\u0442\u0441\u044f \u043f\u0440\u0438\u0451\u043c?","a":"\u041f\u0435\u0440\u0432\u0438\u0447\u043d\u0430\u044f \u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f \u2014 45 \u043c\u0438\u043d\u0443\u0442, \u043f\u043e\u0432\u0442\u043e\u0440\u043d\u0430\u044f \u2014 30 \u043c\u0438\u043d\u0443\u0442."},{"q":"\u0411\u0443\u0434\u0435\u0442 \u043b\u0438 \u0431\u043e\u043b\u044c\u043d\u043e?","a":"\u041e\u0441\u043c\u043e\u0442\u0440 \u0431\u0435\u0437\u0431\u043e\u043b\u0435\u0437\u043d\u0435\u043d\u043d\u044b\u0439. \u0415\u0441\u043b\u0438 \u043f\u0440\u0438 \u043f\u0430\u043b\u044c\u043f\u0430\u0446\u0438\u0438 \u0432\u043e\u0437\u043d\u0438\u043a\u043d\u0435\u0442 \u0434\u0438\u0441\u043a\u043e\u043c\u0444\u043e\u0440\u0442, \u0441\u043a\u0430\u0436\u0438\u0442\u0435 \u0432\u0440\u0430\u0447\u0443 \u2014 \u043e\u043d \u0441\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u0438\u0440\u0443\u0435\u0442 \u043f\u043e\u0434\u0445\u043e\u0434."}],"timeline":[{"day":"\u0414\u0435\u043d\u044c 1","text":"\u041e\u0442\u0434\u044b\u0445, \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u0435 \u043d\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u043d\u0430 \u0441\u0443\u0441\u0442\u0430\u0432"},{"day":"\u0414\u0435\u043d\u044c 3","text":"\u041b\u0451\u0433\u043a\u0430\u044f \u0440\u0430\u0437\u043c\u0438\u043d\u043a\u0430, \u043f\u0440\u043e\u0433\u0443\u043b\u043a\u0438"},{"day":"\u0414\u0435\u043d\u044c 7","text":"\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\u043d\u044b\u0439 \u043e\u0441\u043c\u043e\u0442\u0440, \u043a\u043e\u0440\u0440\u0435\u043a\u0446\u0438\u044f \u043f\u043b\u0430\u043d\u0430"},{"day":"\u0414\u0435\u043d\u044c 14","text":"\u0412\u043e\u0437\u0432\u0440\u0430\u0442 \u043a \u043e\u0431\u044b\u0447\u043d\u044b\u043c \u043d\u0430\u0433\u0440\u0443\u0437\u043a\u0430\u043c"}],"memo":{"name":"\u041f\u0430\u043c\u044f\u0442\u043a\u0430_\u043e\u0440\u0442\u043e\u043f\u0435\u0434.pdf","size":"245 \u041a\u0411"}},
+    {"id":"manual-therapy","name":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f","desc":"\u041c\u044f\u0433\u043a\u0438\u0435 \u0438 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0430\u043b\u044c\u043d\u044b\u0435 \u0442\u0435\u0445\u043d\u0438\u043a\u0438","price":"4 500","category":"\u041c\u0430\u0441\u0441\u0430\u0436","icon":"clock","steps":[],"checklist":["\u0423\u0434\u043e\u0431\u043d\u0430\u044f \u043e\u0434\u0435\u0436\u0434\u0430","\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b \u041c\u0420\u0422 (\u0435\u0441\u043b\u0438 \u0435\u0441\u0442\u044c)"],"faq":[],"timeline":[],"memo":null},
+    {"id":"massage","name":"\u041b\u0435\u0447\u0435\u0431\u043d\u044b\u0439 \u043c\u0430\u0441\u0441\u0430\u0436","desc":"\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0438 \u0441\u0435\u0433\u043c\u0435\u043d\u0442\u0430\u0440\u043d\u044b\u0439","price":"2 500","category":"\u041c\u0430\u0441\u0441\u0430\u0436","icon":"heart","steps":[],"checklist":[],"faq":[],"timeline":[],"memo":null},
+    {"id":"uzi","name":"\u0423\u0417\u0418 \u0441\u0443\u0441\u0442\u0430\u0432\u043e\u0432","desc":"\u0414\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430 \u043d\u0430 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0435 \u044d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u043e\u0433\u043e \u043a\u043b\u0430\u0441\u0441\u0430","price":"2 000","category":"\u0414\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430","icon":"scan","steps":[],"checklist":[],"faq":[],"timeline":[],"memo":null},
+    {"id":"lfk","name":"\u041b\u0424\u041a","desc":"\u0418\u043d\u0434\u0438\u0432\u0438\u0434\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u0437\u0430\u043d\u044f\u0442\u0438\u044f \u0441 \u0438\u043d\u0441\u0442\u0440\u0443\u043a\u0442\u043e\u0440\u043e\u043c","price":"3 000","category":"\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u044f","icon":"flag","steps":[],"checklist":[],"faq":[],"timeline":[],"memo":null},
+    {"id":"func-diag","name":"\u0424\u0443\u043d\u043a\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430","desc":"\u042d\u041a\u0413, \u0445\u043e\u043b\u0442\u0435\u0440, \u043d\u0430\u0433\u0440\u0443\u0437\u043e\u0447\u043d\u044b\u0435 \u0442\u0435\u0441\u0442\u044b","price":"1 500","category":"\u0414\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430","icon":"activity","steps":[],"checklist":[],"faq":[],"timeline":[],"memo":null}
+  ];
+
+  var videos = [
+    {"id":"v1","title":"5 \u0443\u043f\u0440\u0430\u0436\u043d\u0435\u043d\u0438\u0439 \u0434\u043b\u044f \u0448\u0435\u0439\u043d\u043e\u0433\u043e \u043e\u0442\u0434\u0435\u043b\u0430","doctor":"\u0418\u0432\u0430\u043d\u043e\u0432 \u0410.\u041a.","date":"12 \u043c\u0430\u0440\u0442\u0430 2026","duration":"3:42","category":"\u0423\u043f\u0440\u0430\u0436\u043d\u0435\u043d\u0438\u044f","thumb":"./vid-1.jpg"},
+    {"id":"v2","title":"\u041a\u0430\u043a \u043f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u043e \u0441\u0438\u0434\u0435\u0442\u044c \u0437\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u043e\u043c","doctor":"\u0421\u0438\u0434\u043e\u0440\u043e\u0432 \u0414.\u0415.","date":"8 \u043c\u0430\u0440\u0442\u0430 2026","duration":"5:18","category":"\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u0438","thumb":"./vid-2.jpg"},
+    {"id":"v3","title":"\u0420\u0430\u0437\u043c\u0438\u043d\u043a\u0430 \u0434\u043b\u044f \u043a\u043e\u043b\u0435\u043d\u043d\u044b\u0445 \u0441\u0443\u0441\u0442\u0430\u0432\u043e\u0432","doctor":"\u041a\u043e\u0437\u043b\u043e\u0432\u0430 \u0415.\u0410.","date":"3 \u043c\u0430\u0440\u0442\u0430 2026","duration":"2:15","category":"\u0423\u043f\u0440\u0430\u0436\u043d\u0435\u043d\u0438\u044f","thumb":"./vid-3.jpg"},
+    {"id":"v4","title":"\u0427\u0442\u043e \u0434\u0435\u043b\u0430\u0442\u044c \u043f\u0440\u0438 \u0431\u043e\u043b\u0438 \u0432 \u0441\u043f\u0438\u043d\u0435: \u043f\u043e\u0448\u0430\u0433\u043e\u0432\u044b\u0439 \u043f\u043b\u0430\u043d","doctor":"\u041f\u0435\u0442\u0440\u043e\u0432\u0430 \u041c.\u0412.","date":"28 \u0444\u0435\u0432\u0440\u0430\u043b\u044f 2026","duration":"7:30","category":"\u0420\u0430\u0437\u0431\u043e\u0440\u044b","thumb":"./vid-4.jpg"}
+  ];
+
+  var course = {
+    "treatment":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f",
+    "current":4,"total":10,
+    "nextDate":"28 \u043c\u0430\u0440\u0442\u0430, 10:00",
+    "visits":[
+      {"num":1,"name":"\u041f\u0435\u0440\u0432\u0438\u0447\u043d\u0430\u044f \u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0446\u0438\u044f","date":"7 \u043c\u0430\u0440\u0442\u0430 2026","status":"done"},
+      {"num":2,"name":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f","date":"11 \u043c\u0430\u0440\u0442\u0430 2026","status":"done"},
+      {"num":3,"name":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f","date":"18 \u043c\u0430\u0440\u0442\u0430 2026","status":"done"},
+      {"num":4,"name":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f","date":"28 \u043c\u0430\u0440\u0442\u0430 2026","status":"next"},
+      {"num":5,"name":"\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f","date":"\u041d\u0435 \u043d\u0430\u0437\u043d\u0430\u0447\u0435\u043d","status":"pending"}
+    ],
+    "reminder":{"title":"\u0423\u043f\u0440\u0430\u0436\u043d\u0435\u043d\u0438\u044f \u0434\u043b\u044f \u0448\u0435\u0438","time":"\u041a\u0430\u0436\u0434\u044b\u0439 \u0434\u0435\u043d\u044c \u0432 9:00"},
+    "diary":[
+      {"date":"24 \u043c\u0430\u0440","value":4},
+      {"date":"23 \u043c\u0430\u0440","value":3},
+      {"date":"22 \u043c\u0430\u0440","value":5}
+    ]
+  };
+
+  /* ===== ICON MAPS ===== */
+  var iconMap = {
+    clipboard: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="2" width="8" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+    clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    heart: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+    scan: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/></svg>',
+    flag: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 22v-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    activity: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+
+  var backSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var chevronSvg = '<svg class="svc__chevron" width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="m8 4 6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var searchSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.5"/><path d="m13.5 13.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  var faqChevron = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var checkSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  /* ===== HELPERS ===== */
+  function getGreeting() {
+    var h = new Date().getHours();
+    if (h >= 5 && h < 12) return "\u0414\u043e\u0431\u0440\u043e\u0435 \u0443\u0442\u0440\u043e";
+    if (h >= 12 && h < 17) return "\u0414\u043e\u0431\u0440\u044b\u0439 \u0434\u0435\u043d\u044c";
+    if (h >= 17 && h < 22) return "\u0414\u043e\u0431\u0440\u044b\u0439 \u0432\u0435\u0447\u0435\u0440";
+    return "\u0414\u043e\u0431\u0440\u043e\u0439 \u043d\u043e\u0447\u0438";
+  }
+
+  function findDoc(id) {
+    for (var i = 0; i < doctors.length; i++) {
+      if (doctors[i].id === id) return doctors[i];
+    }
+    return doctors[0];
+  }
+
+  function findSvc(id) {
+    for (var i = 0; i < services.length; i++) {
+      if (services[i].id === id) return services[i];
+    }
+    return services[0];
+  }
+
+  function tagsHtml(tags, cls) {
+    var h = "";
+    for (var i = 0; i < tags.length; i++) {
+      h += '<span class="' + cls + '">' + tags[i] + "</span>";
+    }
+    return h;
+  }
+
+  function uniqueCats(arr, field) {
+    var seen = {};
+    var result = [];
+    for (var i = 0; i < arr.length; i++) {
+      var val = arr[i][field];
+      if (!seen[val]) {
+        seen[val] = true;
+        result.push(val);
+      }
+    }
+    return result;
+  }
+
+  function repeatStr(str, n) {
+    var r = "";
+    for (var i = 0; i < n; i++) { r += str; }
+    return r;
+  }
+
+  /* ===== TAB BAR ===== */
+  function renderTabBar(active) {
+    var tabs = [
+      {id:"home", label:"\u0413\u043b\u0430\u0432\u043d\u0430\u044f", hash:"home", icon:'<svg viewBox="0 0 24 24" fill="none"><path d="m3 12 2-2m0 0 7-7 7 7m-14 0v9a1 1 0 0 0 1 1h3m10-10 2 2m-2-2v9a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+      {id:"services", label:"\u0423\u0441\u043b\u0443\u0433\u0438", hash:"services", icon:'<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M9 8h6M9 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'},
+      {id:"doctors", label:"\u0412\u0440\u0430\u0447\u0438", hash:"doctors", icon:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'},
+      {id:"health", label:"\u0417\u0434\u043e\u0440\u043e\u0432\u044c\u0435", hash:"videos", icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="1.5"/></svg>'},
+      {id:"more", label:"\u0415\u0449\u0451", hash:"course", icon:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>'}
+    ];
+    var html = "";
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var isOn = (t.id === active) ? " is-on" : "";
+      var aria = (t.id === active) ? ' aria-current="page"' : "";
+      html += '<a class="tab' + isOn + '"' + aria + ' data-tab="' + t.hash + '">' + t.icon + "<span>" + t.label + "</span></a>";
+    }
+    document.getElementById("tabBar").innerHTML = html;
+  }
+
+  /* ===== ROUTER ===== */
+  function navigate(hash) {
+    if (hash.charAt(0) === "#") hash = hash.substring(1);
+    if (!hash || hash === "/") hash = "home";
+
+    var pages = document.querySelectorAll(".page");
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].className = "page";
+    }
+
+    var parts = hash.split("/");
+    var route = parts[0];
+    var param = parts[1] || "";
+
+    var pageId = "";
+    var tabActive = "";
+
+    if (route === "home") {
+      pageId = "page-home"; tabActive = "home"; renderHome();
+    } else if (route === "services" && param) {
+      pageId = "page-service-detail"; tabActive = "services"; renderServiceDetail(param);
+    } else if (route === "services") {
+      pageId = "page-services"; tabActive = "services"; renderServices();
+    } else if (route === "doctors" && param) {
+      pageId = "page-doctor-detail"; tabActive = "doctors"; renderDoctorDetail(param);
+    } else if (route === "doctors") {
+      pageId = "page-doctors"; tabActive = "doctors"; renderDoctors();
+    } else if (route === "videos") {
+      pageId = "page-videos"; tabActive = "health"; renderVideos();
+    } else if (route === "course") {
+      pageId = "page-course"; tabActive = "more"; renderCourse();
+    } else if (route === "feedback") {
+      pageId = "page-feedback"; tabActive = "more"; renderFeedback();
+    } else {
+      pageId = "page-home"; tabActive = "home"; renderHome();
+    }
+
+    var el = document.getElementById(pageId);
+    if (el) el.className = "page active";
+
+    renderTabBar(tabActive);
+    attachTabListeners();
+
+    window.location.hash = hash;
+    window.scrollTo(0, 0);
+
+    var app = document.getElementById("app");
+    app.className = "app";
+    setTimeout(function(){ app.className = "app ready"; }, 20);
+  }
+
+  function attachTabListeners() {
+    var tabEls = document.querySelectorAll(".tab[data-tab]");
+    for (var i = 0; i < tabEls.length; i++) {
+      (function(tab){
+        tab.addEventListener("click", function(e) {
+          e.preventDefault();
+          navigate(tab.getAttribute("data-tab"));
+        });
+      })(tabEls[i]);
+    }
+  }
+
+  function attachNavLinks(container) {
+    var links = container.querySelectorAll("[data-nav]");
+    for (var i = 0; i < links.length; i++) {
+      (function(el){
+        el.addEventListener("click", function(e) {
+          e.preventDefault();
+          navigate(el.getAttribute("data-nav"));
+        });
+      })(links[i]);
+    }
+  }
+
+  /* ===== PAGE: HOME ===== */
+  function renderHome() {
+    var featured = doctors[0];
+    var others = doctors.slice(1);
+    var topServices = services.slice(0, 3);
+    var greeting = getGreeting();
+
+    var othersHtml = "";
+    for (var i = 0; i < others.length; i++) {
+      var d = others[i];
+      var nm = d.shortName.split(" ");
+      var displayName = nm[0] + " " + (nm[1] ? nm[1].charAt(0) + "." : "");
+      othersHtml += '<a class="doc-sm" data-nav="doctors/' + d.id + '"><div class="doc-sm__ava" style="--h:' + d.hue + ';--s:' + d.sat + '">' + d.initials + '</div><span class="doc-sm__name">' + displayName + "</span></a>";
+    }
+
+    var svcsHtml = "";
+    for (var i = 0; i < topServices.length; i++) {
+      var s = topServices[i];
+      svcsHtml += '<a class="svc-home" data-nav="services/' + s.id + '"><div class="svc-home__num">' + (i + 1) + '</div><div class="svc-home__info"><p class="svc-home__name">' + s.name + '</p><p class="svc-home__desc">' + s.desc + '</p></div><span class="svc-home__price">\u043e\u0442 ' + s.price + ' \u20BD</span></a>';
+    }
+
+    var container = document.getElementById("page-home");
+    container.innerHTML =
+      '<header class="hero" data-a style="--d:0ms">' +
+        '<div class="hero__top">' +
+          '<img src="logo.svg" alt="\u0414\u0438\u043d\u0430\u0441\u0442\u0438\u044f" class="hero__logo">' +
+          '<button class="hero__btn" aria-label="\u0423\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><div class="hero__dot"></div></button>' +
+        '</div>' +
+        '<p class="hero__greeting">' + greeting + '</p>' +
+        '<h1 class="hero__title">\u0417\u0430\u0431\u043e\u0442\u0430 \u043e \u0437\u0434\u043e\u0440\u043e\u0432\u044c\u0435<br>\u043d\u0430\u0447\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0437\u0434\u0435\u0441\u044c</h1>' +
+        '<div class="hero__search"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.5"/><path d="m13.5 13.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input type="search" placeholder="\u041d\u0430\u0439\u0442\u0438 \u0443\u0441\u043b\u0443\u0433\u0443 \u0438\u043b\u0438 \u0432\u0440\u0430\u0447\u0430" aria-label="\u041f\u043e\u0438\u0441\u043a"></div>' +
+      '</header>' +
+      '<main>' +
+        '<section class="widgets" data-a style="--d:60ms" aria-label="\u0411\u044b\u0441\u0442\u0440\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f">' +
+          '<a class="widget" data-nav="services"><div class="widget__icon"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="32" rx="6" fill="#E8F0D0" stroke="#7F9540" stroke-width="2"/><path d="M16 6v8M32 6v8" stroke="#7F9540" stroke-width="2.5" stroke-linecap="round"/><path d="M6 20h36" stroke="#7F9540" stroke-width="2"/><path d="M24 26v10M19 31h10" stroke="#7F9540" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="widget__label">\u0417\u0430\u043f\u0438\u0441\u044c \u043d\u0430 \u043f\u0440\u0438\u0451\u043c</span></a>' +
+          '<a class="widget" data-nav="doctors"><div class="widget__icon"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="6" width="36" height="26" rx="5" fill="#E8F0D0" stroke="#7F9540" stroke-width="2"/><path d="M18 38h12M24 32v6" stroke="#7F9540" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="17" r="5" stroke="#7F9540" stroke-width="2"/><path d="M24 22v2" stroke="#7F9540" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="26" r="1.5" fill="#7F9540"/></svg></div><span class="widget__label">\u0412\u0440\u0430\u0447\u0438 \u043e\u043d\u043b\u0430\u0439\u043d</span></a>' +
+          '<a class="widget" data-nav="feedback"><div class="widget__icon"><svg viewBox="0 0 48 48" fill="none"><path d="M8 24 24 10l16 14" stroke="#7F9540" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22v16a4 4 0 0 0 4 4h16a4 4 0 0 0 4-4V22" stroke="#7F9540" stroke-width="2"/><rect x="14" y="20" width="20" height="18" rx="3" fill="#E8F0D0"/><path d="M24 26v8M20 30h8" stroke="#7F9540" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="widget__label">\u0412\u044b\u0437\u043e\u0432 \u043d\u0430 \u0434\u043e\u043c</span></a>' +
+        '</section>' +
+        '<div class="home-chips" data-a style="--d:80ms">' +
+          '<a class="home-chip is-on"><svg viewBox="0 0 24 24" fill="none" width="16" height="16"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M9 8h6M9 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u0412\u0441\u0435</a>' +
+          '<a class="home-chip">\u041e\u0440\u0442\u043e\u043f\u0435\u0434\u0438\u044f</a><a class="home-chip">\u041d\u0435\u0432\u0440\u043e\u043b\u043e\u0433\u0438\u044f</a><a class="home-chip">\u041c\u0430\u0441\u0441\u0430\u0436</a><a class="home-chip">\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u044f</a><a class="home-chip">\u0414\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0430</a>' +
+        '</div>' +
+        '<section class="sec" data-a style="--d:150ms"><div class="sec__head"><h2 class="sec__title">\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0443\u0435\u043c</h2><a class="sec__more" data-nav="doctors">\u0412\u0441\u0435 \u0432\u0440\u0430\u0447\u0438</a></div>' +
+          '<a class="doc-feat" data-nav="doctors/' + featured.id + '"><div class="doc-feat__ava">' + featured.initials + '</div><div class="doc-feat__info"><p class="doc-feat__name">' + featured.name + '</p><p class="doc-feat__spec">' + featured.spec + ', \u0441\u0442\u0430\u0436 ' + featured.experience + '</p><div class="doc-feat__tags">' + tagsHtml(featured.tags, "doc-feat__tag") + '</div></div></a>' +
+          '<div class="doc-row" style="margin-top:14px">' + othersHtml + '</div></section>' +
+        '<section class="sec" data-a style="--d:220ms"><div class="sec__head"><h2 class="sec__title">\u0422\u043e\u043f \u0443\u0441\u043b\u0443\u0433</h2><a class="sec__more" data-nav="services">\u0412\u0441\u0435</a></div><div class="svcs">' + svcsHtml + '</div></section>' +
+        '<a class="cta" data-a style="--d:280ms" data-nav="feedback"><div class="cta__text"><p class="cta__title">\u0417\u0430\u0434\u0430\u0442\u044c \u0432\u043e\u043f\u0440\u043e\u0441</p><p class="cta__sub">\u0410\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440 \u043f\u0435\u0440\u0435\u0437\u0432\u043e\u043d\u0438\u0442 \u0432 \u0442\u0435\u0447\u0435\u043d\u0438\u0435 15 \u043c\u0438\u043d\u0443\u0442</p></div><div class="cta__btn" aria-label="\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u044c"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2 11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="m22 2-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></a>' +
+        '<div class="team" data-a style="--d:330ms"><img src="./team.jpg" alt="\u041a\u043e\u043c\u0430\u043d\u0434\u0430 \u043a\u043b\u0438\u043d\u0438\u043a\u0438 \u0414\u0438\u043d\u0430\u0441\u0442\u0438\u044f"><div class="team__overlay"><p class="team__title">\u041d\u0430\u0448\u0430 \u043a\u043e\u043c\u0430\u043d\u0434\u0430</p><p class="team__sub">12 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u043e\u0432 \u0441 \u043e\u043f\u044b\u0442\u043e\u043c \u043e\u0442 8 \u043b\u0435\u0442</p></div></div>' +
+        '<div class="tip" data-a style="--d:390ms"><div class="tip__row"><span class="tip__badge">\u0421\u043e\u0432\u0435\u0442</span><span class="tip__time">\u041c\u0430\u0440\u0442 2026</span></div><p class="tip__text">\u0412\u0435\u0441\u043d\u043e\u0439 \u0441\u0443\u0441\u0442\u0430\u0432\u044b \u0447\u0443\u0432\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b \u043a \u043f\u0435\u0440\u0435\u043f\u0430\u0434\u0430\u043c \u0442\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u044b. \u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u0434\u0435\u043d\u044c \u0441 \u043b\u0451\u0433\u043a\u043e\u0439 \u0440\u0430\u0437\u043c\u0438\u043d\u043a\u0438 \u043f\u0435\u0440\u0435\u0434 \u0432\u044b\u0445\u043e\u0434\u043e\u043c</p></div>' +
+        '<div class="bot"></div>' +
+      '</main>';
+
+    attachNavLinks(container);
+    var chips = container.querySelectorAll(".home-chip");
+    for (var i = 0; i < chips.length; i++) {
+      (function(c){ c.addEventListener("click", function(e){ e.preventDefault(); var cur = container.querySelector(".home-chip.is-on"); if(cur) cur.className="home-chip"; c.className="home-chip is-on"; }); })(chips[i]);
+    }
+  }
+
+  /* ===== PAGE: SERVICES ===== */
+  function renderServices() {
+    var categories = ["\u0412\u0441\u0435"].concat(uniqueCats(services, "category"));
+    var container = document.getElementById("page-services");
+    var chipsHtml = "";
+    for (var i = 0; i < categories.length; i++) {
+      chipsHtml += '<a class="chip' + (i === 0 ? " is-on" : "") + '" data-cat="' + categories[i] + '">' + categories[i] + "</a>";
+    }
+    var listHtml = "";
+    for (var i = 0; i < services.length; i++) {
+      var s = services[i];
+      var ic = iconMap[s.icon] || iconMap.clipboard;
+      listHtml += '<a class="svc" data-nav="services/' + s.id + '" data-category="' + s.category + '"><div class="svc__ic">' + ic + '</div><div class="svc__info"><p class="svc__name">' + s.name + '</p><p class="svc__desc">' + s.desc + '</p></div><div class="svc__right"><span class="svc__price">\u043e\u0442 ' + s.price + ' \u20BD</span>' + chevronSvg + '</div></a>';
+    }
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="home">' + backSvg + '</a><h1 class="page-head__title">\u041a\u0430\u0442\u0430\u043b\u043e\u0433 \u0443\u0441\u043b\u0443\u0433</h1></header>' +
+      '<div class="search" data-a style="--d:40ms">' + searchSvg + '<input type="search" placeholder="\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0443\u0441\u043b\u0443\u0433\u0438" id="svcSearch"></div>' +
+      '<nav class="chips" data-a style="--d:70ms">' + chipsHtml + '</nav>' +
+      '<p class="results" data-a style="--d:90ms" id="svcCount">' + services.length + ' \u0443\u0441\u043b\u0443\u0433</p>' +
+      '<main data-a style="--d:100ms" id="svcList">' + listHtml + '<div class="bot"></div></main>';
+    attachNavLinks(container);
+    var chipEls = container.querySelectorAll(".chip");
+    for (var ci = 0; ci < chipEls.length; ci++) {
+      (function(chip){ chip.addEventListener("click", function(e){ e.preventDefault(); var cur = container.querySelector(".chip.is-on"); if(cur) cur.className="chip"; chip.className="chip is-on"; var cat = chip.getAttribute("data-cat"); var count = 0; var svcs = container.querySelectorAll(".svc[data-category]"); for(var j=0;j<svcs.length;j++){var show=(cat==="\u0412\u0441\u0435")||(svcs[j].getAttribute("data-category")===cat);svcs[j].style.display=show?"":"none";if(show)count++;} document.getElementById("svcCount").textContent=count+" \u0443\u0441\u043b\u0443\u0433"; }); })(chipEls[ci]);
+    }
+    var searchInput = document.getElementById("svcSearch");
+    if (searchInput) {
+      searchInput.addEventListener("input", function(){ var q = searchInput.value.toLowerCase(); var count = 0; var svcs = container.querySelectorAll(".svc[data-category]"); for(var j=0;j<svcs.length;j++){var name=svcs[j].querySelector(".svc__name").textContent.toLowerCase();var show=name.indexOf(q)!==-1;svcs[j].style.display=show?"":"none";if(show)count++;} document.getElementById("svcCount").textContent=count+" \u0443\u0441\u043b\u0443\u0433"; });
+    }
+  }
+
+  /* ===== PAGE: SERVICE DETAIL ===== */
+  function renderServiceDetail(id) {
+    var svc = findSvc(id);
+    var container = document.getElementById("page-service-detail");
+    var stepsHtml = "";
+    if (svc.steps && svc.steps.length) {
+      var si = "";
+      for (var i = 0; i < svc.steps.length; i++) {
+        var st = svc.steps[i];
+        var line = (i < svc.steps.length - 1) ? '<div class="step__line"></div>' : "";
+        si += '<div class="step"><div class="step__dot">' + (i+1) + '</div>' + line + '<div class="step__text"><p class="step__name">' + st.title + '</p><p class="step__desc">' + st.desc + '</p></div></div>';
+      }
+      stepsHtml = '<div class="block" data-a style="--d:80ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u041a\u0430\u043a \u043f\u0440\u043e\u0439\u0434\u0451\u0442 \u043f\u0440\u0438\u0451\u043c</p><div class="steps">' + si + '</div></div>';
+    }
+    var checklistHtml = "";
+    if (svc.checklist && svc.checklist.length) {
+      var items = "";
+      for (var i = 0; i < svc.checklist.length; i++) { items += '<div class="check"><div class="check__box">' + checkSvg + '</div><span class="check__label">' + svc.checklist[i] + '</span></div>'; }
+      checklistHtml = '<div class="block" data-a style="--d:120ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u0427\u0442\u043e \u0432\u0437\u044f\u0442\u044c \u0441 \u0441\u043e\u0431\u043e\u0439</p>' + items + '</div>';
+    }
+    var calcHtml = "";
+    if (svc.priceMax) {
+      calcHtml = '<div class="block" data-a style="--d:160ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 6h8M8 10h3M13 10h3M8 14h3M13 14h3M8 18h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u041e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u043e\u0432\u043e\u0447\u043d\u0430\u044f \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c</p><div class="calc"><div class="calc__item"><p class="calc__label">\u041c\u0438\u043d\u0438\u043c\u0443\u043c</p><p class="calc__val">' + svc.price + ' \u20BD</p></div><div class="calc__item"><p class="calc__label">\u0422\u0438\u043f\u0438\u0447\u043d\u043e</p><p class="calc__val">' + svc.priceTypical + ' \u20BD</p></div><div class="calc__item"><p class="calc__label">\u041c\u0430\u043a\u0441\u0438\u043c\u0443\u043c</p><p class="calc__val">' + svc.priceMax + ' \u20BD</p></div></div></div>';
+    }
+    var memoHtml = "";
+    if (svc.memo) {
+      memoHtml = '<div class="block" data-a style="--d:190ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>\u041f\u0430\u043c\u044f\u0442\u043a\u0430 \u043f\u043e\u0441\u043b\u0435 \u043f\u0440\u0438\u0451\u043c\u0430</p><a href="#" class="memo"><div class="memo__ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="memo__info"><p class="memo__name">' + svc.memo.name + '</p><p class="memo__size">PDF \u00B7 ' + svc.memo.size + '</p></div><svg class="memo__dl" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>';
+    }
+    var timelineHtml = "";
+    if (svc.timeline && svc.timeline.length) {
+      var tli = "";
+      for (var i = 0; i < svc.timeline.length; i++) { var t = svc.timeline[i]; tli += '<div class="tl__item"><span class="tl__day">' + t.day + '</span><p class="tl__text">' + t.text + '</p></div>'; }
+      timelineHtml = '<div class="block" data-a style="--d:220ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z" stroke="currentColor" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u0412\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435</p><div class="tl">' + tli + '</div></div>';
+    }
+    var faqHtml = "";
+    if (svc.faq && svc.faq.length) {
+      var fi = "";
+      for (var i = 0; i < svc.faq.length; i++) { var f = svc.faq[i]; fi += '<div class="faq"><div class="faq__q">' + f.q + faqChevron + '</div><div class="faq__a">' + f.a + '</div></div>'; }
+      faqHtml = '<div class="block" data-a style="--d:250ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17" r=".5" fill="currentColor" stroke="currentColor"/></svg>\u0427\u0430\u0441\u0442\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b</p>' + fi + '</div>';
+    }
+    var durationStr = svc.duration ? ' <span>\u00B7 ' + svc.duration + '</span>' : '';
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="services">' + backSvg + '</a><h1 class="page-head__title">\u0423\u0441\u043b\u0443\u0433\u0430</h1></header>' +
+      '<div class="svc-hero" data-a style="--d:40ms"><p class="svc-hero__cat">' + svc.category + '</p><h2 class="svc-hero__title">' + svc.name + '</h2><p class="svc-hero__price">\u043e\u0442 ' + svc.price + ' \u20BD' + durationStr + '</p></div>' +
+      '<main>' + stepsHtml + checklistHtml + calcHtml + memoHtml + timelineHtml + faqHtml +
+      '<div class="cta-wrap" data-a style="--d:280ms"><a class="btn btn--green btn--full">\u0417\u0430\u043f\u0438\u0441\u0430\u0442\u044c\u0441\u044f \u043d\u0430 \u043f\u0440\u0438\u0451\u043c</a></div><div class="bot"></div></main>';
+    attachNavLinks(container);
+    var faqQs = container.querySelectorAll(".faq__q");
+    for (var i = 0; i < faqQs.length; i++) {
+      (function(q){ q.addEventListener("click", function(){ if(q.className.indexOf("open")!==-1){q.className="faq__q";q.nextElementSibling.className="faq__a";}else{q.className="faq__q open";q.nextElementSibling.className="faq__a open";} }); })(faqQs[i]);
+    }
+    var boxes = container.querySelectorAll(".check__box");
+    for (var i = 0; i < boxes.length; i++) {
+      (function(box){ box.addEventListener("click", function(){ if(box.className.indexOf("done")!==-1){box.className="check__box";}else{box.className="check__box done";} }); })(boxes[i]);
+    }
+  }
+
+  /* ===== PAGE: DOCTORS ===== */
+  function renderDoctors() {
+    var container = document.getElementById("page-doctors");
+    var listHtml = "";
+    for (var i = 0; i < doctors.length; i++) {
+      var d = doctors[i];
+      listHtml += '<a class="doc" data-nav="doctors/' + d.id + '" data-spec="' + d.spec + '"><div class="doc__ava" style="--h:' + d.hue + ';--s:' + d.sat + '">' + d.initials + '</div><p class="doc__name">' + d.shortName + '</p><p class="doc__spec">' + d.spec + '</p><div class="doc__tags">' + tagsHtml(d.tags, "tag") + '</div></a>';
+    }
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="home">' + backSvg + '</a><h1 class="page-head__title">\u041d\u0430\u0448\u0438 \u0432\u0440\u0430\u0447\u0438</h1></header>' +
+      '<div class="search" data-a style="--d:40ms">' + searchSvg + '<input type="search" placeholder="\u0418\u043c\u044f \u0438\u043b\u0438 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c" id="docSearch"></div>' +
+      '<nav class="chips" data-a style="--d:70ms"><a class="chip is-on" data-cat="\u0412\u0441\u0435">\u0412\u0441\u0435</a><a class="chip" data-cat="\u041e\u0440\u0442\u043e\u043f\u0435\u0434\u0438\u044f">\u041e\u0440\u0442\u043e\u043f\u0435\u0434\u0438\u044f</a><a class="chip" data-cat="\u041d\u0435\u0432\u0440\u043e\u043b\u043e\u0433\u0438\u044f">\u041d\u0435\u0432\u0440\u043e\u043b\u043e\u0433\u0438\u044f</a><a class="chip" data-cat="\u041c\u0430\u0441\u0441\u0430\u0436">\u041c\u0430\u0441\u0441\u0430\u0436</a><a class="chip" data-cat="\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u044f">\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u044f</a></nav>' +
+      '<p class="results" data-a style="--d:90ms" id="docCount">' + doctors.length + ' \u0432\u0440\u0430\u0447\u0435\u0439</p>' +
+      '<main class="docs" data-a style="--d:100ms">' + listHtml + '</main><div class="bot" style="padding:0 20px"></div>';
+    attachNavLinks(container);
+    var chipEls = container.querySelectorAll(".chip");
+    for (var ci = 0; ci < chipEls.length; ci++) {
+      (function(chip){ chip.addEventListener("click", function(e){ e.preventDefault(); var cur=container.querySelector(".chip.is-on");if(cur)cur.className="chip";chip.className="chip is-on";var cat=chip.getAttribute("data-cat");var count=0;var docEls=container.querySelectorAll(".doc[data-spec]");for(var j=0;j<docEls.length;j++){var spec=docEls[j].getAttribute("data-spec").toLowerCase();var show=(cat==="\u0412\u0441\u0435")||(cat==="\u041e\u0440\u0442\u043e\u043f\u0435\u0434\u0438\u044f"&&spec.indexOf("\u043e\u0440\u0442\u043e\u043f\u0435\u0434")!==-1)||(cat==="\u041d\u0435\u0432\u0440\u043e\u043b\u043e\u0433\u0438\u044f"&&spec.indexOf("\u043d\u0435\u0432\u0440\u043e\u043b\u043e\u0433")!==-1)||(cat==="\u041c\u0430\u0441\u0441\u0430\u0436"&&(spec.indexOf("\u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442")!==-1||spec.indexOf("\u043c\u0430\u0441\u0441\u0430\u0436")!==-1))||(cat==="\u0420\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u0430\u0446\u0438\u044f"&&(spec.indexOf("\u0440\u0435\u0430\u0431\u0438\u043b\u0438\u0442\u043e\u043b\u043e\u0433")!==-1||spec.indexOf("\u0444\u0438\u0437\u0438\u043e\u0442\u0435\u0440\u0430\u043f\u0435\u0432\u0442")!==-1));docEls[j].style.display=show?"":"none";if(show)count++;}document.getElementById("docCount").textContent=count+" \u0432\u0440\u0430\u0447\u0435\u0439"; }); })(chipEls[ci]);
+    }
+    var searchInput = document.getElementById("docSearch");
+    if (searchInput) {
+      searchInput.addEventListener("input", function(){ var q=searchInput.value.toLowerCase();var count=0;var docEls=container.querySelectorAll(".doc[data-spec]");for(var j=0;j<docEls.length;j++){var name=docEls[j].querySelector(".doc__name").textContent.toLowerCase();var spec=docEls[j].querySelector(".doc__spec").textContent.toLowerCase();var show=name.indexOf(q)!==-1||spec.indexOf(q)!==-1;docEls[j].style.display=show?"":"none";if(show)count++;}document.getElementById("docCount").textContent=count+" \u0432\u0440\u0430\u0447\u0435\u0439"; });
+    }
+  }
+
+  /* ===== PAGE: DOCTOR DETAIL ===== */
+  function renderDoctorDetail(id) {
+    var doc = findDoc(id);
+    var container = document.getElementById("page-doctor-detail");
+    var helpsHtml = "";
+    if (doc.helpsIf && doc.helpsIf.length) {
+      var hi = "";
+      for (var i = 0; i < doc.helpsIf.length; i++) { hi += '<div class="help"><div class="help__ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><p class="help__text">' + doc.helpsIf[i] + '</p></div>'; }
+      helpsHtml = '<div class="block" data-a style="--d:120ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u042d\u0442\u043e\u0442 \u0432\u0440\u0430\u0447 \u043f\u043e\u043c\u043e\u0436\u0435\u0442 \u0435\u0441\u043b\u0438:</p><div class="helps">' + hi + '</div></div>';
+    }
+    var svcsHtml = "";
+    if (doc.services && doc.services.length) {
+      var svi = "";
+      for (var i = 0; i < doc.services.length; i++) { var s = doc.services[i]; svi += '<a class="dsvc"><span class="dsvc__name">' + s.name + '</span><span class="dsvc__price">' + s.price + ' \u20BD</span></a>'; }
+      svcsHtml = '<div class="block" data-a style="--d:200ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M9 8h6M9 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u0423\u0441\u043b\u0443\u0433\u0438</p>' + svi + '</div>';
+    }
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="doctors">' + backSvg + '</a><h1 class="page-head__title">\u0412\u0440\u0430\u0447</h1></header>' +
+      '<div class="profile" data-a style="--d:40ms"><div class="profile__ava">' + doc.initials + '</div><h2 class="profile__name">' + doc.name + '</h2><p class="profile__spec">' + doc.spec + ' \u00B7 \u0441\u0442\u0430\u0436 ' + doc.experience + '</p><div class="profile__tags">' + tagsHtml(doc.tags, "tag") + '</div></div>' +
+      '<main>' +
+        '<div class="video" data-a style="--d:80ms"><div class="video__play"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m8 5.5 11 6.5-11 6.5z" fill="currentColor"/></svg></div><span class="video__label">\u0412\u0438\u0434\u0435\u043e-\u0432\u0438\u0437\u0438\u0442\u043a\u0430 \u00B7 0:45</span></div>' +
+        helpsHtml +
+        '<div class="block" data-a style="--d:160ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u041e \u0432\u0440\u0430\u0447\u0435</p><p class="bio">' + doc.bio + '</p></div>' +
+        svcsHtml +
+        '<div class="cta-wrap" data-a style="--d:240ms"><a class="btn btn--green btn--full">\u0417\u0430\u043f\u0438\u0441\u0430\u0442\u044c\u0441\u044f \u043a \u0432\u0440\u0430\u0447\u0443</a></div><div class="bot"></div></main>';
+    attachNavLinks(container);
+  }
+
+  /* ===== PAGE: VIDEOS ===== */
+  function renderVideos() {
+    var container = document.getElementById("page-videos");
+    var categories = ["\u0412\u0441\u0435"].concat(uniqueCats(videos, "category"));
+    var chipsHtml = "";
+    for (var i = 0; i < categories.length; i++) { chipsHtml += '<a class="chip' + (i === 0 ? " is-on" : "") + '" data-cat="' + categories[i] + '">' + categories[i] + "</a>"; }
+    var listHtml = "";
+    for (var i = 0; i < videos.length; i++) {
+      var v = videos[i];
+      listHtml += '<a class="vid" data-category="' + v.category + '"><div class="vid__thumb" style="background-image:url(' + v.thumb + ');background-size:cover;background-position:center"><div class="vid__play"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m8 5.5 11 6.5-11 6.5z" fill="currentColor"/></svg></div><span class="vid__dur">' + v.duration + '</span><span class="vid__cat">' + v.category + '</span></div><div class="vid__info"><p class="vid__title">' + v.title + '</p><p class="vid__meta">' + v.doctor + ' \u00B7 ' + v.date + '</p></div></a>';
+    }
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="home">' + backSvg + '</a><h1 class="page-head__title">\u0412\u0438\u0434\u0435\u043e</h1></header>' +
+      '<nav class="chips" data-a style="--d:40ms">' + chipsHtml + '</nav>' +
+      '<main class="vids" data-a style="--d:80ms">' + listHtml + '<div class="bot"></div></main>';
+    attachNavLinks(container);
+    var chipEls = container.querySelectorAll(".chip");
+    for (var ci = 0; ci < chipEls.length; ci++) {
+      (function(chip){ chip.addEventListener("click", function(e){ e.preventDefault(); var cur=container.querySelector(".chip.is-on");if(cur)cur.className="chip";chip.className="chip is-on";var cat=chip.getAttribute("data-cat");var vidEls=container.querySelectorAll(".vid[data-category]");for(var j=0;j<vidEls.length;j++){vidEls[j].style.display=(cat==="\u0412\u0441\u0435"||vidEls[j].getAttribute("data-category")===cat)?"":"none";} }); })(chipEls[ci]);
+    }
+  }
+
+  /* ===== PAGE: COURSE ===== */
+  function renderCourse() {
+    var container = document.getElementById("page-course");
+    var pct = Math.round((course.current / course.total) * 100);
+    var visitsHtml = "";
+    for (var i = 0; i < course.visits.length; i++) {
+      var v = course.visits[i];
+      var dotClass = "visit__dot--pending";
+      if (v.status === "done") dotClass = "visit__dot--done";
+      else if (v.status === "next") dotClass = "visit__dot--next";
+      var statusText = ""; var statusClass = "";
+      if (v.status === "done") { statusText = "\u041f\u0440\u043e\u0439\u0434\u0435\u043d"; statusClass = "visit__status visit__status--done"; }
+      else if (v.status === "next") { statusText = "\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u0439"; statusClass = "visit__status visit__status--next"; }
+      var statusEl = statusText ? '<span class="' + statusClass + '">' + statusText + '</span>' : '';
+      visitsHtml += '<div class="visit"><div class="visit__dot ' + dotClass + '"></div><div class="visit__info"><p class="visit__name">\u0412\u0438\u0437\u0438\u0442 ' + v.num + ' \u2014 ' + v.name + '</p><p class="visit__date">' + v.date + '</p></div>' + statusEl + '</div>';
+    }
+    var diaryHtml = "";
+    for (var i = 0; i < course.diary.length; i++) {
+      var d = course.diary[i];
+      var filled = d.value; var empty = 5 - filled;
+      var color = filled >= 4 ? "var(--green)" : "var(--warn)";
+      var dotsHtml = repeatStr('<div class="diary__d" style="background:var(--green)"></div>', filled) + repeatStr('<div class="diary__d" style="background:var(--line)"></div>', empty);
+      diaryHtml += '<div class="diary__row"><span class="diary__day">' + d.date + '</span><div class="diary__dots">' + dotsHtml + '</div><span class="diary__val" style="color:' + color + '">' + d.value + '</span></div>';
+    }
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="home">' + backSvg + '</a><h1 class="page-head__title">\u041c\u043e\u0439 \u043a\u0443\u0440\u0441</h1></header>' +
+      '<main>' +
+        '<div class="progress-card" data-a style="--d:40ms"><p class="progress__label">' + course.treatment + '</p><h2 class="progress__title">\u0412\u0438\u0437\u0438\u0442 ' + course.current + ' \u0438\u0437 ' + course.total + '</h2><p class="progress__sub">\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u0439: ' + course.nextDate + '</p><div class="progress__bar"><div class="progress__fill" style="width:' + pct + '%"></div></div></div>' +
+        '<div class="block" data-a style="--d:80ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u0412\u0438\u0437\u0438\u0442\u044b</p>' + visitsHtml + '</div>' +
+        '<div class="block" data-a style="--d:120ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>\u041d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u044f</p><a class="reminder" data-nav="videos"><div class="reminder__ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m8 5.5 11 6.5-11 6.5z" fill="currentColor"/></svg></div><div class="reminder__info"><p class="reminder__title">' + course.reminder.title + '</p><p class="reminder__time">' + course.reminder.time + '</p></div><span class="reminder__btn">\u041e\u0442\u043a\u0440\u044b\u0442\u044c</span></a></div>' +
+        '<div class="block" data-a style="--d:160ms"><p class="block__title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>\u0421\u0430\u043c\u043e\u0447\u0443\u0432\u0441\u0442\u0432\u0438\u0435</p><div class="diary__today"><p class="diary__q">\u041a\u0430\u043a \u0432\u044b \u0441\u0435\u0431\u044f \u0447\u0443\u0432\u0441\u0442\u0432\u0443\u0435\u0442\u0435 \u0441\u0435\u0433\u043e\u0434\u043d\u044f?</p><div class="diary__moods"><div class="diary__mood" data-val="1">1</div><div class="diary__mood" data-val="2">2</div><div class="diary__mood" data-val="3">3</div><div class="diary__mood" data-val="4">4</div><div class="diary__mood" data-val="5">5</div></div><div class="diary__scale"><span>\u041f\u043b\u043e\u0445\u043e</span><span>\u041e\u0442\u043b\u0438\u0447\u043d\u043e</span></div></div><div class="diary__history">' + diaryHtml + '</div></div>' +
+        '<div class="bot"></div></main>';
+    attachNavLinks(container);
+    var moods = container.querySelectorAll(".diary__mood");
+    for (var i = 0; i < moods.length; i++) {
+      (function(mood){ mood.addEventListener("click", function(){ var all=container.querySelectorAll(".diary__mood");for(var j=0;j<all.length;j++){all[j].className="diary__mood";}mood.className="diary__mood sel"; }); })(moods[i]);
+    }
+  }
+
+  /* ===== PAGE: FEEDBACK ===== */
+  function renderFeedback() {
+    var container = document.getElementById("page-feedback");
+    container.innerHTML =
+      '<header class="page-head" data-a style="--d:0ms"><a class="page-head__back" data-nav="home">' + backSvg + '</a><h1 class="page-head__title">\u041e\u0446\u0435\u043d\u043a\u0430 \u0432\u0438\u0437\u0438\u0442\u0430</h1></header>' +
+      '<div class="fb" id="fbForm" data-a style="--d:40ms">' +
+        '<div class="fb__hero"><div class="fb__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><h2 class="fb__title">\u041a\u0430\u043a \u043f\u0440\u043e\u0448\u0451\u043b \u0432\u0438\u0437\u0438\u0442?</h2><p class="fb__sub">\u041c\u0430\u043d\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0440\u0430\u043f\u0438\u044f \u00B7 25 \u043c\u0430\u0440\u0442\u0430</p></div>' +
+        '<div class="ratings" id="ratings">' +
+          '<div class="rate" data-rate="good"><div class="rate__emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#5A8F3C" stroke-width="1.5"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="#5A8F3C" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="9" r="1" fill="#5A8F3C"/><circle cx="15" cy="9" r="1" fill="#5A8F3C"/></svg></div><div class="rate__text"><p class="rate__label">\u0425\u043e\u0440\u043e\u0448\u043e</p><p class="rate__desc">\u0412\u0441\u0451 \u043f\u043e\u043d\u0440\u0430\u0432\u0438\u043b\u043e\u0441\u044c</p></div><div class="rate__check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>' +
+          '<div class="rate" data-rate="ok"><div class="rate__emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#D4951A" stroke-width="1.5"/><path d="M8 15h8" stroke="#D4951A" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="9" r="1" fill="#D4951A"/><circle cx="15" cy="9" r="1" fill="#D4951A"/></svg></div><div class="rate__text"><p class="rate__label">\u041d\u043e\u0440\u043c\u0430\u043b\u044c\u043d\u043e</p><p class="rate__desc">\u0412 \u0446\u0435\u043b\u043e\u043c \u043e\u043a</p></div><div class="rate__check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>' +
+          '<div class="rate" data-rate="bad"><div class="rate__emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#C4513D" stroke-width="1.5"/><path d="M16 16s-1.5-2-4-2-4 2-4 2" stroke="#C4513D" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="9" r="1" fill="#C4513D"/><circle cx="15" cy="9" r="1" fill="#C4513D"/></svg></div><div class="rate__text"><p class="rate__label">\u041f\u043b\u043e\u0445\u043e</p><p class="rate__desc">\u0415\u0441\u0442\u044c \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b</p></div><div class="rate__check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>' +
+        '</div>' +
+        '<div class="detail" id="detail"><p class="detail__label">\u0425\u043e\u0442\u0438\u0442\u0435 \u0440\u0430\u0441\u0441\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u043e\u0434\u0440\u043e\u0431\u043d\u0435\u0435?</p><textarea class="detail__area" placeholder="\u0427\u0442\u043e \u043f\u043e\u043d\u0440\u0430\u0432\u0438\u043b\u043e\u0441\u044c \u0438\u043b\u0438 \u0447\u0442\u043e \u043c\u043e\u0436\u043d\u043e \u0443\u043b\u0443\u0447\u0448\u0438\u0442\u044c..." rows="4"></textarea><p class="detail__hint">\u041d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e, \u043d\u043e \u043e\u0447\u0435\u043d\u044c \u043f\u043e\u043c\u043e\u0436\u0435\u0442 \u043d\u0430\u043c \u0441\u0442\u0430\u0442\u044c \u043b\u0443\u0447\u0448\u0435</p></div>' +
+        '<div class="cta-wrap" id="ctaWrap" style="display:none"><button class="btn btn--green btn--full" id="submitBtn">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button></div>' +
+      '</div>' +
+      '<div class="thanks" id="thanks"><div class="thanks__ic"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h2 class="thanks__title">\u0421\u043f\u0430\u0441\u0438\u0431\u043e!</h2><p class="thanks__text">\u0412\u0430\u0448\u0430 \u043e\u0446\u0435\u043d\u043a\u0430 \u043f\u043e\u043c\u043e\u0436\u0435\u0442 \u043d\u0430\u043c \u0441\u0442\u0430\u0442\u044c \u043b\u0443\u0447\u0448\u0435. \u0415\u0441\u043b\u0438 \u0435\u0441\u0442\u044c \u0432\u043e\u043f\u0440\u043e\u0441\u044b \u2014 \u043c\u044b \u043d\u0430 \u0441\u0432\u044f\u0437\u0438.</p></div>' +
+      '<div class="bot"></div>';
+    attachNavLinks(container);
+    var rates = container.querySelectorAll(".rate");
+    for (var i = 0; i < rates.length; i++) {
+      (function(rate){ rate.addEventListener("click", function(){ var allRates=container.querySelectorAll(".rate");for(var j=0;j<allRates.length;j++){allRates[j].className="rate";}rate.className="rate sel";var detailEl=document.getElementById("detail");if(detailEl)detailEl.className="detail show";var ctaEl=document.getElementById("ctaWrap");if(ctaEl)ctaEl.style.display="block"; }); })(rates[i]);
+    }
+    var submitBtn = document.getElementById("submitBtn");
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function(){ var form=document.getElementById("fbForm");if(form)form.style.display="none";var thanksEl=document.getElementById("thanks");if(thanksEl)thanksEl.className="thanks show"; });
+    }
+  }
+
+  /* ===== INIT ===== */
+  function init() {
+    var hash = window.location.hash;
+    if (hash && hash.length > 1) { navigate(hash.substring(1)); }
+    else { navigate("home"); }
+  }
+
+  window.addEventListener("hashchange", function() {
+    var hash = window.location.hash;
+    if (hash && hash.length > 1) { navigate(hash.substring(1)); }
+    else { navigate("home"); }
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
