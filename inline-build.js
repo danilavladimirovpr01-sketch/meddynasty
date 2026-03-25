@@ -34,8 +34,11 @@ const html = [
   '<style>' + css + '</style>',
   '</head>',
   '<body>',
-  '<div id="root"></div>',
-  '<script>window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}<' + '/script>',
+  '<div id="root"><p style="padding:40px;text-align:center;font-family:sans-serif;color:#999">Загрузка...</p></div>',
+  '<script>',
+  'try{window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}catch(e){}',
+  'window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}',
+  '<' + '/script>',
   '<script>' + js + '<' + '/script>',
   '</body>',
   '</html>'
