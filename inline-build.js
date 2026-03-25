@@ -9,7 +9,7 @@ const cssFile = files.find(f => f.endsWith('.css'));
 let js = readFileSync(distDir + jsFile, 'utf8');
 const css = cssFile ? readFileSync(distDir + cssFile, 'utf8') : '';
 
-// Transpile to ES5 for max compatibility
+// Transpile to ES5 for Telegram WebView compatibility
 const result = transformSync(js, {
   jsc: {
     target: 'es5',
@@ -38,12 +38,12 @@ const html = `<!DOCTYPE html>
 <body>
 <div id="root"></div>
 <script>
-try{window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}catch(e){}
-window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}
-</script>
+try{var tg=window.Telegram&&window.Telegram.WebApp;if(tg){tg.ready();tg.expand()}}catch(e){}
+window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style='color:red;padding:20px;font-size:12px;word-break:break-all'>"+m+"\\n"+s+":"+l+":"+c+"</pre>"}
+<\/script>
 <script>${js}<\/script>
 </body>
 </html>`;
 
 writeFileSync('dist/index.html', html);
-console.log('Done: JS=' + (js.length/1024).toFixed(1) + 'KB CSS=' + (css.length/1024).toFixed(1) + 'KB INLINE');
+console.log('Done: JS=' + (js.length/1024).toFixed(1) + 'KB CSS=' + (css.length/1024).toFixed(1) + 'KB');
