@@ -10,9 +10,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:sans-serif;background:#F7F6F2}
+    #debug{position:fixed;bottom:0;left:0;right:0;background:red;color:#fff;font-size:12px;padding:8px;z-index:9999;display:none;max-height:40vh;overflow:auto}
+  </style>
+  <script>
+    window.onerror = function(msg, src, line, col, err) {
+      var d = document.getElementById('debug');
+      if(d){ d.style.display='block'; d.textContent = msg + ' at ' + src + ':' + line; }
+    };
+  </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root"><p style="padding:20px;color:#888">Загрузка...</p></div>
+  <div id="debug"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
