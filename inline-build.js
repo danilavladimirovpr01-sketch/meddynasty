@@ -9,7 +9,7 @@ const cssFile = files.find(f => f.endsWith('.css'));
 let js = readFileSync(distDir + jsFile, 'utf8');
 const css = cssFile ? readFileSync(distDir + cssFile, 'utf8') : '';
 
-// Transpile to ES5: converts template literals, arrow functions, let/const, etc.
+// Transpile to ES5 for max compatibility
 const result = transformSync(js, {
   jsc: {
     target: 'es5',
@@ -17,41 +17,34 @@ const result = transformSync(js, {
   },
   minify: true,
 });
-js = 'window.__OK=1;' + result.code;
+js = result.code;
 
 writeFileSync('dist/app.js', js);
 
-// DEBUG: deploy bare minimum test page to check if Telegram WebView works at all
-const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://telegram.org/js/telegram-web-app.js"><\/script>
-</head>
-<body style="font-family:sans-serif;padding:20px;background:#F7F6F2">
-<h1 style="color:#7F9540">Test v3</h1>
-<div id="log"></div>
-<script>
-var log = document.getElementById("log");
-function add(msg) { log.innerHTML += "<p>" + msg + "</p>"; }
-add("1. JS works");
-add("2. Telegram: " + (typeof window.Telegram));
-try {
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.ready();
-    add("3. ready() OK");
-    add("4. Platform: " + window.Telegram.WebApp.platform);
-    add("5. Version: " + window.Telegram.WebApp.version);
-  } else {
-    add("3. No WebApp");
-  }
-} catch(e) { add("ERROR: " + e.message); }
-add("6. DONE - " + new Date().toISOString());
-<\/script>
-</body>
-</html>`;
-
+const html = [
+  '<!DOCTYPE html>',
+  '<html lang="ru">',
+  '<head>',
+  '<meta charset="UTF-8">',
+  '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">',
+  '<title>Династия</title>',
+  '<meta name="theme-color" content="#7F9540">',
+  '<script src="https://telegram.org/js/telegram-web-app.js"><' + '/script>',
+  '<link rel="preconnect" href="https://fonts.googleapis.com">',
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+  '<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">',
+  '<style>' + css + '</style>',
+  '</head>',
+  '<body>',
+  '<div id="root"></div>',
+  '<script>',
+  'try{window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}catch(e){}',
+  'window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}',
+  '<' + '/script>',
+  '<script src="app.js"><' + '/script>',
+  '</body>',
+  '</html>'
+].join('\n');
 
 writeFileSync('dist/index.html', html);
-console.log('Done: JS=' + (js.length/1024).toFixed(1) + 'KB CSS=' + (css.length/1024).toFixed(1) + 'KB → separate file');
+console.log('Done: JS=' + (js.length/1024).toFixed(1) + 'KB CSS=' + (css.length/1024).toFixed(1) + 'KB');
