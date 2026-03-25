@@ -1,0 +1,46 @@
+.fb{padding:0 20px}
+.fb__hero{text-align:center;padding:20px 0 28px}
+.fb__icon{width:64px;height:64px;border-radius:50%;background:var(--green-10);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.fb__title{font-size:1.375rem;font-weight:800;margin-bottom:4px}
+.fb__sub{font-size:.8125rem;color:var(--text-2)}
+
+/* F-19: Quick rating */
+.ratings{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.rate{
+  display:flex;align-items:center;gap:14px;
+  padding:18px;background:var(--surface);border-radius:var(--r-lg);
+  cursor:pointer;transition:all 200ms var(--ease);
+  border:2px solid transparent;
+}
+.rate:active{transform:scale(.98)}
+.rate.sel{border-color:var(--green);background:var(--green-10)}
+.rate__emoji{font-size:1.5rem;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.rate__text{flex:1}
+.rate__label{font-size:.9375rem;font-weight:700;margin-bottom:1px}
+.rate__desc{font-size:.6875rem;color:var(--text-2)}
+.rate__check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 200ms}
+.rate.sel .rate__check{background:var(--green);border-color:var(--green)}
+
+/* F-20: Detail form */
+.detail{display:none;margin-bottom:24px}
+.detail.show{display:block}
+.detail__label{font-size:.875rem;font-weight:700;margin-bottom:10px}
+.detail__area{
+  width:100%;min-height:100px;padding:14px;
+  background:var(--surface);border:1.5px solid var(--line);
+  border-radius:var(--r-md);resize:vertical;
+  font-size:.875rem;line-height:1.5;
+  transition:border-color 200ms;
+}
+.detail__area:focus{border-color:var(--green)}
+.detail__area::placeholder{color:var(--text-3)}
+.detail__hint{font-size:.6875rem;color:var(--text-2);margin-top:8px}
+
+.fb .cta-wrap{padding:0 0 24px}
+
+/* Thank you state */
+.thanks{display:none;text-align:center;padding:40px 20px}
+.thanks.show{display:block}
+.thanks__ic{width:72px;height:72px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.thanks__title{font-size:1.25rem;font-weight:800;margin-bottom:6px}
+.thanks__text{font-size:.8125rem;color:var(--text-2);line-height:1.5}

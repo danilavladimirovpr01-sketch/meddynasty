@@ -1,0 +1,39 @@
+.docs{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px}
+.doc{background:var(--surface);border-radius:var(--r-lg);padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform 120ms var(--ease)}
+.doc:active{transform:scale(.97)}
+.doc__ava{width:64px;height:64px;border-radius:50%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;background:linear-gradient(135deg,hsl(var(--h,80) var(--s,30%) 85%),hsl(var(--h,80) var(--s,30%) 76%));color:hsl(var(--h,80) var(--s,30%) 28%);border:2px solid var(--green-20)}
+.doc__name{font-size:.8125rem;font-weight:700;margin-bottom:2px;line-height:1.2}
+.doc__spec{font-size:.625rem;color:var(--text-2);margin-bottom:8px}
+.doc__tags{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+.results{font-size:.75rem;color:var(--text-2);padding:0 20px;margin-bottom:12px}
+
+/* Doctor Detail */
+.profile{text-align:center;padding:10px 20px 24px}
+.profile__ava{width:88px;height:88px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#A4B862,#7F9540);color:#fff;border:3px solid var(--green-20)}
+.profile__name{font-size:1.25rem;font-weight:800;margin-bottom:2px}
+.profile__spec{font-size:.8125rem;color:var(--text-2);margin-bottom:10px}
+.profile__tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+
+.block{margin:0 20px 16px;background:var(--surface);border-radius:var(--r-lg);padding:18px}
+.block__title{font-size:.9375rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.block__title svg{color:var(--green);flex-shrink:0}
+
+.video{margin:0 20px 16px;border-radius:var(--r-lg);overflow:hidden;background:#1a1a1a;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative}
+.video__play{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 150ms var(--ease)}
+.video__play:active{transform:scale(.9)}
+.video__label{position:absolute;bottom:12px;left:14px;font-size:.6875rem;font-weight:600;color:rgba(255,255,255,.7)}
+
+.helps{display:flex;flex-direction:column;gap:0}
+.help{display:flex;align-items:flex-start;gap:10px;padding:10px 0}
+.help+.help{border-top:1px solid var(--line-l)}
+.help__ic{width:28px;height:28px;border-radius:8px;background:var(--green-10);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.help__text{font-size:.8125rem;line-height:1.4}
+
+.bio{font-size:.8125rem;line-height:1.6;color:var(--text-2)}
+
+.dsvc{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.dsvc+.dsvc{border-top:1px solid var(--line-l)}
+.dsvc__name{font-size:.8125rem;font-weight:600}
+.dsvc__price{font-size:.8125rem;font-weight:700;color:var(--green)}
+
+.cta-wrap{position:sticky;bottom:calc(68px + var(--sab));padding:12px 20px;background:linear-gradient(0deg,var(--bg) 60%,transparent);z-index:40}

@@ -1,0 +1,58 @@
+.block{margin:0 20px 16px;background:var(--surface);border-radius:var(--r-lg);padding:18px}
+.block__title{font-size:.9375rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.block__title svg{color:var(--green);flex-shrink:0}
+
+/* F-13: Progress */
+.progress-card{margin:0 20px 16px;padding:22px 20px;background:var(--green);border-radius:var(--r-xl);color:#fff;position:relative;overflow:hidden}
+.progress-card::after{content:'';position:absolute;right:-20px;bottom:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07)}
+.progress__label{font-size:.75rem;font-weight:600;opacity:.75;margin-bottom:4px;position:relative}
+.progress__title{font-size:1.5rem;font-weight:800;margin-bottom:4px;position:relative}
+.progress__sub{font-size:.75rem;opacity:.7;margin-bottom:16px;position:relative}
+.progress__bar{height:8px;background:rgba(255,255,255,.2);border-radius:100px;overflow:hidden;position:relative}
+.progress__fill{height:100%;background:#fff;border-radius:100px;transition:width 600ms var(--ease)}
+
+/* Visits */
+.visit{display:flex;gap:14px;padding:12px 0;align-items:center}
+.visit+.visit{border-top:1px solid var(--line-l)}
+.visit__dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.visit__dot--done{background:var(--green)}
+.visit__dot--next{background:var(--warn);animation:blink 2s ease-in-out infinite}
+.visit__dot--pending{background:var(--line)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.visit__info{flex:1}
+.visit__name{font-size:.8125rem;font-weight:600}
+.visit__date{font-size:.6875rem;color:var(--text-2)}
+.visit__status{font-size:.625rem;font-weight:600;flex-shrink:0}
+.visit__status--done{color:var(--green)}
+.visit__status--next{color:var(--warn)}
+
+/* F-15: Diary */
+.diary__today{text-align:center;margin-bottom:14px}
+.diary__q{font-size:.875rem;font-weight:600;margin-bottom:12px}
+.diary__moods{display:flex;justify-content:center;gap:10px}
+.diary__mood{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;
+  background:var(--bg);border:2px solid transparent;
+  transition:all 200ms var(--ease);cursor:pointer;
+}
+.diary__mood:active,.diary__mood.sel{border-color:var(--green);background:var(--green-10);transform:scale(1.1)}
+.diary__scale{display:flex;justify-content:space-between;margin-top:8px;padding:0 6px}
+.diary__scale span{font-size:.5625rem;color:var(--text-3);font-weight:500}
+
+.diary__history{margin-top:16px}
+.diary__row{display:flex;align-items:center;gap:10px;padding:8px 0}
+.diary__row+.diary__row{border-top:1px solid var(--line-l)}
+.diary__day{font-size:.6875rem;font-weight:600;width:44px;flex-shrink:0;color:var(--text-2)}
+.diary__dots{display:flex;gap:3px;flex:1}
+.diary__d{width:8px;height:8px;border-radius:50%}
+.diary__val{font-size:.6875rem;font-weight:700;width:20px;text-align:right;flex-shrink:0}
+
+/* F-14: Exercise reminder */
+.reminder{display:flex;align-items:center;gap:14px;padding:14px;background:var(--green-10);border-radius:var(--r-sm)}
+.reminder__ic{width:40px;height:40px;border-radius:12px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.reminder__info{flex:1}
+.reminder__title{font-size:.8125rem;font-weight:700;margin-bottom:2px}
+.reminder__time{font-size:.6875rem;color:var(--text-2)}
+.reminder__btn{font-size:.6875rem;font-weight:700;color:var(--green);flex-shrink:0}

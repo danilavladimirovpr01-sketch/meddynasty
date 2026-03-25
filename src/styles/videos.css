@@ -1,0 +1,10 @@
+.vids{display:flex;flex-direction:column;gap:14px;padding:0 20px}
+.vid{background:var(--surface);border-radius:var(--r-lg);overflow:hidden;transition:transform 120ms var(--ease)}
+.vid:active{transform:scale(.98)}
+.vid__thumb{aspect-ratio:16/9;background:#2C2C2C;position:relative;display:flex;align-items:center;justify-content:center}
+.vid__play{width:48px;height:48px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center}
+.vid__dur{position:absolute;bottom:10px;right:10px;font-size:.625rem;font-weight:600;color:#fff;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:6px}
+.vid__cat{position:absolute;top:10px;left:10px;font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:var(--green);padding:3px 8px;border-radius:6px}
+.vid__info{padding:14px 16px}
+.vid__title{font-size:.9375rem;font-weight:700;margin-bottom:4px;line-height:1.3}
+.vid__meta{font-size:.6875rem;color:var(--text-2)}
