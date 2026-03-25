@@ -17,9 +17,8 @@ const result = transformSync(js, {
   },
   minify: true,
 });
-js = result.code;
+js = 'window.__OK=1;' + result.code;
 
-// Write transpiled JS as separate file
 writeFileSync('dist/app.js', js);
 
 const html = [
@@ -42,7 +41,8 @@ const html = [
   'try{window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}catch(e){}',
   'window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}',
   '<' + '/script>',
-  '<script src="app.js"><' + '/script>',
+  '<script src="app.js" onerror="document.getElementById(\'root\').innerHTML=\'<h1 style=color:red;padding:20px>SCRIPT LOAD FAILED</h1>\'"><' + '/script>',
+  '<script>if(!window.__OK){document.getElementById("root").innerHTML="<h1 style=color:red;padding:20px>app.js loaded but did NOT execute</h1>"}<' + '/script>',
   '</body>',
   '</html>'
 ].join('\n');
