@@ -19,6 +19,9 @@ const result = transformSync(js, {
 });
 js = result.code;
 
+// Write transpiled JS as separate file
+writeFileSync('dist/app.js', js);
+
 const html = [
   '<!DOCTYPE html>',
   '<html lang="ru">',
@@ -39,10 +42,10 @@ const html = [
   'try{window.Telegram.WebApp.ready();window.Telegram.WebApp.expand()}catch(e){}',
   'window.onerror=function(m,s,l,c){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+m+"\\nLine:"+l+":"+c+"</pre>"}',
   '<' + '/script>',
-  '<script>' + js + '<' + '/script>',
+  '<script src="app.js"><' + '/script>',
   '</body>',
   '</html>'
 ].join('\n');
 
 writeFileSync('dist/index.html', html);
-console.log('Done: JS=' + (js.length/1024).toFixed(1) + 'KB CSS=' + (css.length/1024).toFixed(1) + 'KB');
+console.log('Done: JS=' + (js.length/1024).toFixed(1) + 'KB CSS=' + (css.length/1024).toFixed(1) + 'KB → separate file');
