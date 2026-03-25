@@ -1,35 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Династия</title>
+  <meta name="theme-color" content="#7F9540">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body style="font-family:sans-serif;padding:20px;background:#F7F6F2">
-<h2>Test Mini App</h2>
-<div id="log"></div>
-<script>
-var log = document.getElementById("log");
-function add(msg) { log.innerHTML += "<p>" + msg + "</p>"; }
-
-add("1. JS works");
-add("2. Telegram obj: " + (typeof window.Telegram));
-
-try {
-  if (window.Telegram && window.Telegram.WebApp) {
-    add("3. WebApp exists");
-    window.Telegram.WebApp.ready();
-    add("4. ready() OK");
-    add("5. Platform: " + window.Telegram.WebApp.platform);
-    add("6. Version: " + window.Telegram.WebApp.version);
-    add("7. initData: " + (window.Telegram.WebApp.initData ? "yes" : "empty"));
-  } else {
-    add("3. No WebApp object");
-  }
-} catch(e) {
-  add("ERROR: " + e.message);
-}
-add("DONE");
-</script>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
