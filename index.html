@@ -5,25 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Династия</title>
   <meta name="theme-color" content="#7F9540">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body{margin:0;font-family:sans-serif;background:#F7F6F2}
-    #debug{position:fixed;bottom:0;left:0;right:0;background:red;color:#fff;font-size:12px;padding:8px;z-index:9999;display:none;max-height:40vh;overflow:auto}
-  </style>
+  <style>body{margin:0;background:#F7F6F2}#e{position:fixed;bottom:0;left:0;right:0;background:red;color:#fff;font:11px/1.4 monospace;padding:8px;z-index:9999;display:none;word-break:break-all}</style>
   <script>
-    window.onerror = function(msg, src, line, col, err) {
-      var d = document.getElementById('debug');
-      if(d){ d.style.display='block'; d.textContent = msg + ' at ' + src + ':' + line; }
-    };
+    window.onerror=function(m,s,l,c,e){var d=document.getElementById('e');if(d){d.style.display='block';d.textContent+='ERR:'+m+' @'+s+':'+l+'\n'}return false};
+    window.addEventListener('unhandledrejection',function(ev){var d=document.getElementById('e');if(d){d.style.display='block';d.textContent+='REJ:'+ev.reason+'\n'}});
   </script>
 </head>
 <body>
-  <div id="root"><p style="padding:20px;color:#888">Загрузка...</p></div>
-  <div id="debug"></div>
+  <div id="root"><p style="padding:40px 20px;color:#8C8578;font-family:Manrope,sans-serif;font-size:14px">Загрузка приложения...</p></div>
+  <div id="e"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
