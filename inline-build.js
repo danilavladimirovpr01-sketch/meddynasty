@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { transformSync } from '@swc/core';
 
 const distDir = 'dist/assets/';
 const files = readdirSync(distDir);
@@ -8,11 +9,15 @@ const cssFile = files.find(f => f.endsWith('.css'));
 let js = readFileSync(distDir + jsFile, 'utf8');
 const css = cssFile ? readFileSync(distDir + cssFile, 'utf8') : '';
 
-// Replace backtick strings with double quotes for Telegram WebView compat
-js = js.replace(/`([^`]*)`/g, function(match, content) {
-  if (content.indexOf('${') !== -1) return match;
-  return '"' + content.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+// Transpile to ES5: converts template literals, arrow functions, let/const, etc.
+const result = transformSync(js, {
+  jsc: {
+    target: 'es5',
+    parser: { syntax: 'ecmascript' },
+  },
+  minify: true,
 });
+js = result.code;
 
 const html = [
   '<!DOCTYPE html>',
@@ -30,7 +35,7 @@ const html = [
   '</head>',
   '<body>',
   '<div id="root"></div>',
-  '<script>try{' + js + '}catch(e){document.getElementById("root").innerHTML="<pre style=color:red;padding:20px>"+e.message+"</pre>"}<' + '/script>',
+  '<script>' + js + '<' + '/script>',
   '</body>',
   '</html>'
 ].join('\n');

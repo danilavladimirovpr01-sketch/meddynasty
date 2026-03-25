@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@swc/core": "^1.15.21",
     "vite": "^8.0.1"
   }
 }
